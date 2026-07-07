@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAFE MAP</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="sidebar">
+      <h1>☕ CAFE MAP</h1>
+      <div id="form-area">
+        <h2>カフェを登録</h2>
+        <form id="cafe-form">
+          <div class="field">
+            <label for="name">カフェ名</label>
+            <input type="text" id="name" required />
+          </div>
+          <div class="field">
+            <label for="address">住所</label>
+            <input type="text" id="address" required />
+          </div>
+          <div class="field-row">
+            <div class="field half">
+              <label for="lat">緯度</label>
+              <input type="number" id="lat" step="any" required />
+            </div>
+            <div class="field half">
+              <label for="lng">経度</label>
+              <input type="number" id="lng" step="any" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="comment">一言コメント</label>
+            <input type="text" id="comment" />
+          </div>
+          <button type="submit" id="register-btn">登録</button>
+          <button type="button" id="cancel-btn">キャンセル</button>
+        </form>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

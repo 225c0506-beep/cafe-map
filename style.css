@@ -1,0 +1,141 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: sans-serif;
+}
+
+#app {
+  display: flex;
+  height: 100vh;
+}
+
+#sidebar {
+  width: 340px;
+  padding: 24px;
+  overflow-y: auto;
+  background: #fafaf8;
+  border-right: 1px solid #ddd;
+}
+
+#sidebar h1 {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+#form-area h2 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field-row {
+  display: flex;
+  gap: 10px;
+}
+
+.field.half {
+  flex: 1;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #555;
+}
+
+input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #6c8c5e;
+  box-shadow: 0 0 0 2px rgba(108, 140, 94, 0.2);
+}
+
+#register-btn {
+  width: 100%;
+  padding: 10px;
+  background: #6c8c5e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+#register-btn:hover {
+  background: #5a7a4e;
+}
+
+#cancel-btn {
+  width: 100%;
+  padding: 10px;
+  background: #ccc;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 8px;
+  display: none;
+}
+
+#cancel-btn:hover {
+  background: #bbb;
+}
+
+.popup-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.popup-btn {
+  flex: 1;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background: #4a90d9;
+  color: #fff;
+}
+
+.edit-btn:hover {
+  background: #357abd;
+}
+
+.delete-btn {
+  background: #d9534f;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background: #c9302c;
+}
+
+#map {
+  flex: 1;
+  height: 100vh;
+}
