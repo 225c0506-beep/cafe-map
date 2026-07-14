@@ -54,15 +54,16 @@ label {
   color: #555;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 14px;
+  background: #fff;
 }
 
-input:focus {
+input:focus, select:focus {
   outline: none;
   border-color: #6c8c5e;
   box-shadow: 0 0 0 2px rgba(108, 140, 94, 0.2);

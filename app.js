@@ -24,6 +24,12 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function label(val) {
+  if (val === 'yes') return 'あり';
+  if (val === 'no') return 'なし';
+  return '不明';
+}
+
 function buildPopupContent(cafe) {
   const lines = [
     `<b>${escapeHtml(cafe.name)}</b>`,
@@ -32,6 +38,12 @@ function buildPopupContent(cafe) {
   if (cafe.comment) {
     lines.push(`💬 ${escapeHtml(cafe.comment)}`);
   }
+  if (cafe.hours) {
+    lines.push(`🕐 ${escapeHtml(cafe.hours)}`);
+  }
+  lines.push(`📶 Wifi: ${label(cafe.wifi)}`);
+  lines.push(`🔌 電源: ${label(cafe.power)}`);
+  lines.push(`🚗 駐車場: ${label(cafe.parking)}`);
   lines.push(
     `<div class="popup-actions">`,
     `  <button class="popup-btn edit-btn" data-id="${cafe.id}">編集</button>`,
@@ -76,6 +88,10 @@ function setFormMode(mode, cafe) {
     document.getElementById('lat').value = cafe.lat;
     document.getElementById('lng').value = cafe.lng;
     document.getElementById('comment').value = cafe.comment || '';
+    document.getElementById('hours').value = cafe.hours || '';
+    document.getElementById('wifi').value = cafe.wifi || '';
+    document.getElementById('power').value = cafe.power || '';
+    document.getElementById('parking').value = cafe.parking || '';
     btn.textContent = '更新';
     title.textContent = 'カフェを編集';
     cancelBtn.style.display = 'block';
@@ -125,6 +141,10 @@ document.getElementById('cafe-form').addEventListener('submit', function (e) {
   const lat = parseFloat(document.getElementById('lat').value);
   const lng = parseFloat(document.getElementById('lng').value);
   const comment = document.getElementById('comment').value.trim();
+  const hours = document.getElementById('hours').value.trim();
+  const wifi = document.getElementById('wifi').value || null;
+  const power = document.getElementById('power').value || null;
+  const parking = document.getElementById('parking').value || null;
 
   if (!name || !address || isNaN(lat) || isNaN(lng)) return;
 
@@ -133,13 +153,13 @@ document.getElementById('cafe-form').addEventListener('submit', function (e) {
   if (editingId) {
     const idx = cafes.findIndex(c => c.id === editingId);
     if (idx !== -1) {
-      cafes[idx] = { ...cafes[idx], name, address, lat, lng, comment };
+      cafes[idx] = { ...cafes[idx], name, address, lat, lng, comment, hours, wifi, power, parking };
     }
     saveCafes(cafes);
     renderAllCafes();
     setFormMode('create');
   } else {
-    const cafe = { id: getNextId(), name, address, lat, lng, comment };
+    const cafe = { id: getNextId(), name, address, lat, lng, comment, hours, wifi, power, parking };
     cafes.push(cafe);
     saveCafes(cafes);
     addMarker(cafe);
