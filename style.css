@@ -22,6 +22,89 @@ html, body {
   border-right: 1px solid #ddd;
 }
 
+#auth-area {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #ddd;
+}
+
+#auth-area .field {
+  margin-bottom: 10px;
+}
+
+#auth-area input {
+  font-size: 13px;
+  padding: 7px 9px;
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.auth-buttons button {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#auth-signup-btn {
+  background: #4a90d9;
+  color: #fff;
+}
+
+#auth-signup-btn:hover {
+  background: #357abd;
+}
+
+#auth-signin-btn {
+  background: #6c8c5e;
+  color: #fff;
+}
+
+#auth-signin-btn:hover {
+  background: #5a7a4e;
+}
+
+#auth-logged-in {
+  display: flex;
+  align-items: center;
+}
+
+#auth-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+#auth-email-display {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#auth-signout-btn {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#auth-signout-btn:hover {
+  background: #f5f5f5;
+}
+
 #sidebar h1 {
   font-size: 20px;
   margin-bottom: 20px;
@@ -103,6 +186,19 @@ input:focus, select:focus {
   background: #bbb;
 }
 
+.popup-photo {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin: 4px 0;
+}
+
+#photo {
+  font-size: 13px;
+  padding: 6px;
+}
+
 .popup-actions {
   margin-top: 8px;
   display: flex;
@@ -134,6 +230,91 @@ input:focus, select:focus {
 
 .delete-btn:hover {
   background: #c9302c;
+}
+
+.popup-like {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.like-count {
+  font-size: 14px;
+  font-weight: bold;
+  color: #e25555;
+  min-width: 20px;
+}
+
+.like-btn {
+  padding: 4px 10px;
+  border: 1px solid #e25555;
+  border-radius: 4px;
+  background: #fff;
+  color: #e25555;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.like-btn:hover {
+  background: #ffe5e5;
+}
+
+.comment-list {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #eee;
+  font-size: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  padding: 3px 0;
+}
+
+.comment-empty {
+  color: #999;
+  font-style: italic;
+}
+
+.comment-form {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.comment-form .comment-nickname {
+  flex: 2;
+  min-width: 60px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.comment-form .comment-text {
+  flex: 3;
+  min-width: 100px;
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+.comment-submit {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 3px;
+  background: #6c8c5e;
+  color: #fff;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.comment-submit:hover {
+  background: #5a7a4e;
 }
 
 #map {

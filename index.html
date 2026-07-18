@@ -11,7 +11,31 @@
   <div id="app">
     <div id="sidebar">
       <h1>☕ CAFE MAP</h1>
-      <div id="form-area">
+
+      <div id="auth-area">
+        <div id="auth-logged-out">
+          <div class="field">
+            <label for="auth-email">メールアドレス</label>
+            <input type="email" id="auth-email" />
+          </div>
+          <div class="field">
+            <label for="auth-password">パスワード</label>
+            <input type="password" id="auth-password" />
+          </div>
+          <div class="auth-buttons">
+            <button id="auth-signup-btn">新規登録</button>
+            <button id="auth-signin-btn">ログイン</button>
+          </div>
+        </div>
+        <div id="auth-logged-in" style="display:none">
+          <div id="auth-user-info">
+            <span id="auth-email-display"></span>
+            <button id="auth-signout-btn">ログアウト</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="form-area" style="display:none">
         <h2>カフェを登録</h2>
         <form id="cafe-form">
           <div class="field">
@@ -63,6 +87,10 @@
               <option value="yes">あり</option>
               <option value="no">なし</option>
             </select>
+          </div>
+          <div class="field">
+            <label for="photo">写真</label>
+            <input type="file" id="photo" accept="image/*" />
           </div>
           <button type="submit" id="register-btn">登録</button>
           <button type="button" id="cancel-btn">キャンセル</button>
