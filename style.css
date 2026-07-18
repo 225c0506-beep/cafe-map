@@ -6,7 +6,9 @@
 
 html, body {
   height: 100%;
-  font-family: sans-serif;
+  font-family: 'Noto Sans JP', sans-serif;
+  background: #F7F4F0;
+  color: #6D7972;
 }
 
 #app {
@@ -16,16 +18,26 @@ html, body {
 
 #sidebar {
   width: 340px;
-  padding: 24px;
+  padding: 28px 24px;
   overflow-y: auto;
-  background: #fafaf8;
-  border-right: 1px solid #ddd;
+  background: #F7F4F0;
+  border-right: 1px solid #D3D7CF;
 }
 
+#sidebar h1 {
+  font-family: 'Caveat', cursive;
+  font-size: 28px;
+  font-weight: 700;
+  color: #8A9A85;
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+
+/* ===== Auth Area ===== */
 #auth-area {
   margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #ddd;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #D3D7CF;
 }
 
 #auth-area .field {
@@ -34,7 +46,13 @@ html, body {
 
 #auth-area input {
   font-size: 13px;
-  padding: 7px 9px;
+  padding: 8px 10px;
+}
+
+#auth-area label {
+  font-size: 12px;
+  margin-bottom: 3px;
+  color: #8A9A85;
 }
 
 .auth-buttons {
@@ -47,28 +65,31 @@ html, body {
   flex: 1;
   padding: 8px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
-  font-weight: bold;
+  font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 #auth-signup-btn {
-  background: #4a90d9;
+  background: #B2BCAC;
   color: #fff;
 }
 
 #auth-signup-btn:hover {
-  background: #357abd;
+  background: #8A9A85;
 }
 
 #auth-signin-btn {
-  background: #6c8c5e;
-  color: #fff;
+  background: #D3D7CF;
+  color: #6D7972;
 }
 
 #auth-signin-btn:hover {
-  background: #5a7a4e;
+  background: #B2BCAC;
+  color: #fff;
 }
 
 #auth-logged-in {
@@ -86,34 +107,34 @@ html, body {
 #auth-email-display {
   flex: 1;
   font-size: 13px;
-  color: #333;
+  color: #6D7972;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 #auth-signout-btn {
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 6px 14px;
+  border: 1px solid #D3D7CF;
+  border-radius: 8px;
   background: #fff;
   font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #6D7972;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 #auth-signout-btn:hover {
-  background: #f5f5f5;
+  background: #F7F4F0;
 }
 
-#sidebar h1 {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-
+/* ===== Form Area ===== */
 #form-area h2 {
   font-size: 16px;
+  font-weight: 500;
   margin-bottom: 16px;
-  color: #333;
+  color: #8A9A85;
 }
 
 .field {
@@ -131,155 +152,183 @@ html, body {
 
 label {
   display: block;
-  font-size: 13px;
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: 500;
   margin-bottom: 4px;
-  color: #555;
+  color: #8A9A85;
 }
 
 input, select {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 9px 11px;
+  border: 1px solid #D3D7CF;
+  border-radius: 8px;
   font-size: 14px;
+  font-family: 'Noto Sans JP', sans-serif;
   background: #fff;
+  color: #6D7972;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: #6c8c5e;
-  box-shadow: 0 0 0 2px rgba(108, 140, 94, 0.2);
+  border-color: #B2BCAC;
+  box-shadow: 0 0 0 3px rgba(178, 188, 172, 0.25);
+}
+
+::placeholder {
+  color: #D3D7CF;
 }
 
 #register-btn {
   width: 100%;
-  padding: 10px;
-  background: #6c8c5e;
+  padding: 11px;
+  background: #B2BCAC;
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 15px;
-  font-weight: bold;
+  font-weight: 500;
+  font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
   margin-top: 4px;
+  transition: background 0.2s;
 }
 
 #register-btn:hover {
-  background: #5a7a4e;
+  background: #8A9A85;
 }
 
 #cancel-btn {
   width: 100%;
-  padding: 10px;
-  background: #ccc;
-  color: #333;
+  padding: 11px;
+  background: #D3D7CF;
+  color: #6D7972;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 15px;
+  font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
   margin-top: 8px;
   display: none;
+  transition: background 0.2s;
 }
 
 #cancel-btn:hover {
-  background: #bbb;
+  background: #B2BCAC;
+  color: #fff;
+}
+
+/* ===== Photo ===== */
+#photo {
+  font-size: 13px;
+  padding: 7px;
+  font-family: 'Noto Sans JP', sans-serif;
 }
 
 .popup-photo {
   width: 100%;
   max-height: 160px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 8px;
   margin: 4px 0;
 }
 
-#photo {
-  font-size: 13px;
-  padding: 6px;
-}
-
+/* ===== Popup ===== */
 .popup-actions {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   gap: 6px;
 }
 
 .popup-btn {
   flex: 1;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .edit-btn {
-  background: #4a90d9;
+  background: #B2BCAC;
   color: #fff;
 }
 
 .edit-btn:hover {
-  background: #357abd;
+  background: #8A9A85;
 }
 
 .delete-btn {
-  background: #d9534f;
-  color: #fff;
+  background: #D3D7CF;
+  color: #6D7972;
 }
 
 .delete-btn:hover {
-  background: #c9302c;
+  background: #c0a0a0;
+  color: #fff;
 }
 
+/* ===== Like ===== */
 .popup-like {
-  margin-top: 8px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .like-count {
   font-size: 14px;
-  font-weight: bold;
-  color: #e25555;
+  font-weight: 700;
+  color: #8A9A85;
   min-width: 20px;
 }
 
 .like-btn {
-  padding: 4px 10px;
-  border: 1px solid #e25555;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border: 1px solid #B2BCAC;
+  border-radius: 6px;
   background: #fff;
-  color: #e25555;
+  color: #8A9A85;
   font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
 .like-btn:hover {
-  background: #ffe5e5;
+  background: #B2BCAC;
+  color: #fff;
 }
 
+/* ===== Comments ===== */
 .comment-list {
-  margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px solid #eee;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #D3D7CF;
   font-size: 12px;
   max-height: 120px;
   overflow-y: auto;
 }
 
 .comment-item {
-  padding: 3px 0;
+  padding: 4px 0;
+  line-height: 1.5;
+}
+
+.comment-item strong {
+  color: #8A9A85;
 }
 
 .comment-empty {
-  color: #999;
+  color: #B2BCAC;
   font-style: italic;
 }
 
 .comment-form {
-  margin-top: 6px;
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
@@ -288,36 +337,92 @@ input:focus, select:focus {
 .comment-form .comment-nickname {
   flex: 2;
   min-width: 60px;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  padding: 5px 7px;
+  border: 1px solid #D3D7CF;
+  border-radius: 6px;
   font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
 }
 
 .comment-form .comment-text {
   flex: 3;
   min-width: 100px;
-  padding: 4px 6px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
+  padding: 5px 7px;
+  border: 1px solid #D3D7CF;
+  border-radius: 6px;
   font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
 }
 
 .comment-submit {
-  padding: 4px 10px;
+  padding: 5px 12px;
   border: none;
-  border-radius: 3px;
-  background: #6c8c5e;
+  border-radius: 6px;
+  background: #B2BCAC;
   color: #fff;
   font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif;
   cursor: pointer;
+  transition: background 0.2s;
 }
 
 .comment-submit:hover {
-  background: #5a7a4e;
+  background: #8A9A85;
 }
 
+/* ===== Map ===== */
 #map {
   flex: 1;
   height: 100vh;
+}
+
+/* ===== Leaflet popup restyle ===== */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.1);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px;
+  font-size: 13px;
+  color: #6D7972;
+  line-height: 1.6;
+}
+
+.leaflet-popup-content h3 {
+  font-family: 'Caveat', cursive;
+  font-size: 20px;
+  font-weight: 700;
+  color: #8A9A85;
+  margin-bottom: 4px;
+}
+
+.leaflet-popup-tip {
+  box-shadow: none;
+}
+
+/* ===== Info tags (wifi, power, parking) ===== */
+.info-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.info-tag.yes {
+  background: #e8f0e4;
+  color: #8A9A85;
+}
+
+.info-tag.no {
+  background: #f0e8e8;
+  color: #b0a0a0;
+}
+
+.info-tag.unknown {
+  background: #eaeaea;
+  color: #B2BCAC;
 }

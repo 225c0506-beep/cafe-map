@@ -25,26 +25,25 @@ function escapeHtml(str) {
   return div.innerHTML
 }
 
-function label(val) {
-  if (val === 'yes') return 'あり'
-  if (val === 'no') return 'なし'
-  return '不明'
+function tag(val, text) {
+  const cls = val === 'yes' ? 'yes' : val === 'no' ? 'no' : 'unknown'
+  return `<span class="info-tag ${cls}">${text}</span>`
 }
 
 function buildPopupContent(cafe) {
   const likeCount = cafe.like_count ?? 0
   const lines = [
-    `<b>${escapeHtml(cafe.name)}</b>`,
+    `<h3>${escapeHtml(cafe.name)}</h3>`,
     `📍 ${escapeHtml(cafe.address)}`
   ]
   if (cafe.photo_url) {
     lines.push(`<img class="popup-photo" src="${escapeHtml(cafe.photo_url)}" alt="${escapeHtml(cafe.name)}" />`)
   }
-  if (cafe.comment) lines.push(`💬 ${escapeHtml(cafe.comment)}`)
+  if (cafe.comment) lines.push(`${escapeHtml(cafe.comment)}`)
   if (cafe.hours) lines.push(`🕐 ${escapeHtml(cafe.hours)}`)
-  lines.push(`📶 Wifi: ${label(cafe.wifi)}`)
-  lines.push(`🔌 電源: ${label(cafe.power)}`)
-  lines.push(`🚗 駐車場: ${label(cafe.parking)}`)
+  lines.push(
+    `${tag(cafe.wifi, 'Wifi')} ${tag(cafe.power, '電源')} ${tag(cafe.parking, '駐車場')}`
+  )
   if (currentUser) {
     if (cafe.user_id === currentUser.id) {
       lines.push(
