@@ -117,6 +117,7 @@ function buildDetailContent(cafe) {
     <div class="detail-info-row">
       ${tag(cafe.wifi, 'Wifi')} ${tag(cafe.power, '電源')} ${tag(cafe.parking, '駐車場')}
     </div>
+    <div class="detail-info-row" style="font-size:12px;color:var(--color-sub);">登録者: ${escapeHtml(cafe.nickname || '不明')}</div>
     ${cafe.comment ? `<div class="detail-comment">${escapeHtml(cafe.comment)}</div>` : ''}
     ${ownerActions}
     ${authSection}
@@ -292,7 +293,8 @@ function updateAuthUI(user) {
     currentUser = user
     loggedOut.style.display = 'none'
     loggedIn.style.display = 'flex'
-    emailDisplay.textContent = user.email
+    const nick = user.user_metadata?.nickname || user.email
+    emailDisplay.textContent = nick
     showView('list')
   } else {
     currentUser = null
@@ -603,6 +605,13 @@ function setAuthMode(mode) {
   const title = document.getElementById('auth-title')
   const btn = document.getElementById('auth-submit-btn')
   const switchEl = document.getElementById('auth-switch')
+  const nicknameField = document.getElementById('auth-nickname-field')
+  if (mode === 'signup') {
+    nicknameField.style.display = 'block'
+  } else {
+    nicknameField.style.display = 'none'
+    document.getElementById('auth-nickname').value = ''
+  }
   if (mode === 'login') {
     title.textContent = 'ログイン'
     btn.textContent = 'ログイン'
@@ -671,7 +680,12 @@ async function handleAuthSubmit() {
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password })
     if (error) showAuthInfo(error.message)
   } else {
-    const { error } = await supabaseClient.auth.signUp({ email, password })
+    const nickname = document.getElementById('auth-nickname').value.trim()
+    if (!nickname) {
+      showAuthInfo('ニックネームを入力してください')
+      return
+    }
+    const { error } = await supabaseClient.auth.signUp({ email, password, options: { data: { nickname } } })
     if (error) {
       showAuthInfo(error.message)
     } else {
@@ -733,7 +747,8 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
       console.warn('Photo upload failed, continuing without photo:', err)
     }
   }
-  const payload = { name, address, lat, lng, comment, hours, wifi, power, parking, user_id: currentUser.id }
+  const userNickname = currentUser.user_metadata?.nickname || currentUser.email
+  const payload = { name, address, lat, lng, comment, hours, wifi, power, parking, user_id: currentUser.id, nickname: userNickname }
   if (photo_url) payload.photo_url = photo_url
 
   if (editingId) {
