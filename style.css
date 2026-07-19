@@ -496,6 +496,60 @@ html, body {
   border-color: var(--color-sub);
 }
 
+/* --- 気分フィルター（一覧上部） --- */
+#mood-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-sub);
+}
+
+.mood-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-right: 4px;
+}
+
+.mood-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--color-main);
+  border-radius: 14px;
+  background: var(--color-white);
+  color: var(--color-accent);
+  font-size: 11px;
+  font-family: var(--font-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mood-btn:hover {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+.mood-btn.active {
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
+}
+
+.mood-reset {
+  color: var(--color-sub);
+  font-size: 10px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.mood-reset:hover {
+  color: var(--color-text);
+  border-color: var(--color-sub);
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -1245,6 +1299,27 @@ input:focus, select:focus {
 [data-theme="dark"] .tag-add-btn:hover {
   background: var(--color-main);
   color: var(--color-white);
+}
+
+[data-theme="dark"] .mood-btn {
+  background: #1a1d1a;
+  border-color: var(--color-sub);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .mood-btn:hover {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .mood-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+[data-theme="dark"] #mood-filter {
+  border-top-color: var(--color-sub);
 }
 
 

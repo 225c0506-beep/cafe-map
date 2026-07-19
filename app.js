@@ -33,6 +33,13 @@ let tempMarker = null
 
 const TAG_LIST = ['作業向き', 'おしゃべりOK', '隠れ家', '静か', 'コスパ◎', '長居OK', '写真映え', '電源あり', 'Wi-Fi快適', '一人でも入りやすい']
 
+const MOOD_TAGS = {
+  '作業したい': ['作業向き', '電源あり', 'Wi-Fi快適', '静か', '長居OK'],
+  'おしゃべりしたい': ['おしゃべりOK', '長居OK'],
+  '一人で静かに': ['静か', '一人でも入りやすい', '隠れ家'],
+  '写真映え重視': ['写真映え', '隠れ家']
+}
+
 function selectedTags(container) {
   const tags = []
   ;(container || document).querySelectorAll('.tag-check:checked').forEach(cb => tags.push(cb.value))
@@ -312,14 +319,30 @@ async function renderAllCafes() {
 function applySearchFilter() {
   const query = document.getElementById('search-input').value.trim().toLowerCase()
   const activeTags = Array.from(document.querySelectorAll('.tag-filter-btn.active')).map(b => b.dataset.tag)
-  const filtered = allCafes.filter(c => {
+  const activeMood = document.querySelector('.mood-btn.active')?.dataset.mood || null
+  const moodTagList = activeMood ? (MOOD_TAGS[activeMood] || []) : []
+
+  let filtered = allCafes.filter(c => {
     if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query) && !(c.comment && c.comment.toLowerCase().includes(query))) return false
     if (activeTags.length > 0) {
       const tags = c._tags || {}
       if (!activeTags.some(t => tags[t])) return false
     }
+    if (moodTagList.length > 0) {
+      const tags = c._tags || {}
+      if (!moodTagList.some(t => tags[t])) return false
+    }
     return true
   })
+
+  if (moodTagList.length > 0) {
+    filtered.sort((a, b) => {
+      const aCount = moodTagList.filter(t => (a._tags || {})[t]).length
+      const bCount = moodTagList.filter(t => (b._tags || {})[t]).length
+      return bCount - aCount
+    })
+  }
+
   renderCafeList(filtered)
 }
 
@@ -334,6 +357,24 @@ function initTagFilter() {
       container.querySelectorAll('.tag-filter-btn.active').forEach(b => b.classList.remove('active'))
     } else {
       btn.classList.toggle('active')
+    }
+    applySearchFilter()
+  })
+}
+
+function initMoodFilter() {
+  const container = document.getElementById('mood-filter')
+  container.innerHTML = '<div class="mood-label">気分で選ぶ</div>' +
+    Object.keys(MOOD_TAGS).map(m => `<button class="mood-btn" data-mood="${m}">${m}</button>`).join('') +
+    '<button class="mood-btn mood-reset" id="mood-reset">✕ リセット</button>'
+  container.addEventListener('click', function (e) {
+    const btn = e.target.closest('.mood-btn')
+    if (!btn) return
+    if (btn.id === 'mood-reset') {
+      container.querySelectorAll('.mood-btn.active').forEach(b => b.classList.remove('active'))
+    } else {
+      container.querySelectorAll('.mood-btn.active').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
     }
     applySearchFilter()
   })
@@ -1051,3 +1092,4 @@ document.getElementById('dark-toggle').addEventListener('change', function () {
 applyDarkMode(darkEnabled)
 
 initTagFilter()
+initMoodFilter()
