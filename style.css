@@ -484,6 +484,18 @@ html, body {
   border-color: var(--color-accent);
 }
 
+.tag-filter-reset {
+  color: var(--color-sub);
+  font-size: 10px;
+  border-color: transparent;
+  background: transparent;
+}
+
+.tag-filter-reset:hover {
+  color: var(--color-text);
+  border-color: var(--color-sub);
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;

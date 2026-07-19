@@ -311,12 +311,12 @@ async function renderAllCafes() {
 
 function applySearchFilter() {
   const query = document.getElementById('search-input').value.trim().toLowerCase()
-  const activeTag = document.querySelector('.tag-filter-btn.active')?.dataset.tag || null
+  const activeTags = Array.from(document.querySelectorAll('.tag-filter-btn.active')).map(b => b.dataset.tag)
   const filtered = allCafes.filter(c => {
     if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query) && !(c.comment && c.comment.toLowerCase().includes(query))) return false
-    if (activeTag) {
+    if (activeTags.length > 0) {
       const tags = c._tags || {}
-      if (!tags[activeTag]) return false
+      if (!activeTags.some(t => tags[t])) return false
     }
     return true
   })
@@ -325,15 +325,15 @@ function applySearchFilter() {
 
 function initTagFilter() {
   const container = document.getElementById('tag-filter')
-  container.innerHTML = TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('')
+  container.innerHTML = TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('') +
+    '<button class="tag-filter-btn tag-filter-reset" id="tag-filter-reset">✕ リセット</button>'
   container.addEventListener('click', function (e) {
     const btn = e.target.closest('.tag-filter-btn')
     if (!btn) return
-    if (btn.classList.contains('active')) {
-      btn.classList.remove('active')
+    if (btn.id === 'tag-filter-reset') {
+      container.querySelectorAll('.tag-filter-btn.active').forEach(b => b.classList.remove('active'))
     } else {
-      container.querySelectorAll('.tag-filter-btn').forEach(b => b.classList.remove('active'))
-      btn.classList.add('active')
+      btn.classList.toggle('active')
     }
     applySearchFilter()
   })
