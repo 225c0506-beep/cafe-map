@@ -485,7 +485,7 @@ html, body {
 }
 
 .tag-filter-reset {
-  color: var(--color-sub);
+  color: var(--color-text);
   font-size: 10px;
   border-color: transparent;
   background: transparent;
