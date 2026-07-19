@@ -3,104 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CAFE MAP</title>
+  <title>Cafe Map</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app">
-    <div id="sidebar">
-      <h1>☕ CAFE MAP</h1>
-
-      <div id="auth-area">
-        <div id="auth-logged-out">
-          <div class="field">
-            <label for="auth-email">メールアドレス</label>
-            <input type="email" id="auth-email" />
+    <header id="header">
+      <h1 class="site-title">Cafe Map</h1>
+      <div id="header-right">
+        <div id="auth-header">
+          <div id="auth-logged-out">
+            <button id="header-login-btn">ログイン</button>
+            <button id="header-signup-btn">新規登録</button>
           </div>
-          <div class="field">
-            <label for="auth-password">パスワード</label>
-            <input type="password" id="auth-password" />
-          </div>
-          <div class="auth-buttons">
-            <button id="auth-signup-btn">新規登録</button>
-            <button id="auth-signin-btn">ログイン</button>
-          </div>
-        </div>
-        <div id="auth-logged-in" style="display:none">
-          <div id="auth-user-info">
+          <div id="auth-logged-in" style="display:none">
             <span id="auth-email-display"></span>
             <button id="auth-signout-btn">ログアウト</button>
           </div>
         </div>
       </div>
+    </header>
 
-      <div id="form-area" style="display:none">
-        <h2>カフェを登録</h2>
-        <form id="cafe-form">
-          <div class="field">
-            <label for="name">カフェ名</label>
-            <input type="text" id="name" required />
+    <div id="main">
+      <div id="map-area">
+        <div id="map"></div>
+
+        <!-- カフェ一覧（地図上フローティング） -->
+        <div id="view-list">
+          <div id="list-header">
+            <input type="text" id="search-input" placeholder="カフェを検索..." />
           </div>
-          <div class="field">
-            <label for="address">住所</label>
-            <input type="text" id="address" required />
-          </div>
-          <div class="field-row">
-            <div class="field half">
-              <label for="lat">緯度</label>
-              <input type="number" id="lat" step="any" required />
+          <div id="cafe-list"></div>
+          <button id="show-form-btn" class="add-btn">＋ カフェを登録</button>
+        </div>
+
+        <!-- カフェ詳細（地図上フローティング） -->
+        <div id="view-detail" style="display:none">
+          <button id="back-from-detail" class="back-btn">← 戻る</button>
+          <div id="detail-content"></div>
+        </div>
+
+        <!-- ログイン（地図上フローティング） -->
+        <div id="view-auth" style="display:none">
+          <h2 id="auth-title">ログイン</h2>
+          <form id="auth-form">
+            <div class="field">
+              <label for="auth-email">メールアドレス</label>
+              <input type="email" id="auth-email" />
             </div>
-            <div class="field half">
-              <label for="lng">経度</label>
-              <input type="number" id="lng" step="any" required />
+            <div class="field">
+              <label for="auth-password">パスワード</label>
+              <input type="password" id="auth-password" />
             </div>
-          </div>
-          <div class="field">
-            <label for="comment">一言コメント</label>
-            <input type="text" id="comment" />
-          </div>
-          <div class="field">
-            <label for="hours">営業時間</label>
-            <input type="text" id="hours" placeholder="例：9:00〜18:00" />
-          </div>
-          <div class="field">
-            <label for="wifi">Wifi</label>
-            <select id="wifi">
-              <option value="">不明</option>
-              <option value="yes">あり</option>
-              <option value="no">なし</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="power">電源</label>
-            <select id="power">
-              <option value="">不明</option>
-              <option value="yes">あり</option>
-              <option value="no">なし</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="parking">駐車場</label>
-            <select id="parking">
-              <option value="">不明</option>
-              <option value="yes">あり</option>
-              <option value="no">なし</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="photo">写真</label>
-            <input type="file" id="photo" accept="image/*" />
-          </div>
-          <button type="submit" id="register-btn">登録</button>
-          <button type="button" id="cancel-btn">キャンセル</button>
-        </form>
+            <div id="auth-info"></div>
+            <button type="submit" id="auth-submit-btn" class="auth-submit-btn">ログイン</button>
+            <p id="auth-switch" class="auth-switch"></p>
+          </form>
+          <button id="auth-cancel-btn" class="back-btn" style="width:100%;margin-top:12px;">キャンセル</button>
+        </div>
+
+        <!-- 登録・編集フォーム（地図上フローティング） -->
+        <div id="view-form" style="display:none">
+          <button id="back-from-form" class="back-btn">← 戻る</button>
+          <h2 id="form-title">カフェを登録</h2>
+          <form id="cafe-form">
+            <div class="field">
+              <label for="name">カフェ名</label>
+              <input type="text" id="name" required />
+            </div>
+            <div class="field">
+              <label for="address">住所</label>
+              <div class="input-with-btn">
+                <input type="text" id="address" required />
+                <button type="button" id="geocode-btn" title="住所から位置を取得">🔍</button>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field half">
+                <label for="hours-start">開始時間</label>
+                <input type="time" id="hours-start" />
+              </div>
+              <div class="field half">
+                <label for="hours-end">終了時間</label>
+                <input type="time" id="hours-end" />
+              </div>
+            </div>
+            <input type="hidden" id="lat" />
+            <input type="hidden" id="lng" />
+            <div class="field">
+              <label for="comment">一言コメント</label>
+              <input type="text" id="comment" />
+            </div>
+            <div class="field">
+              <label for="wifi">Wifi</label>
+              <select id="wifi">
+                <option value="">不明</option>
+                <option value="yes">あり</option>
+                <option value="no">なし</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="power">電源</label>
+              <select id="power">
+                <option value="">不明</option>
+                <option value="yes">あり</option>
+                <option value="no">なし</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="parking">駐車場</label>
+              <select id="parking">
+                <option value="">不明</option>
+                <option value="yes">あり</option>
+                <option value="no">なし</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="photo">写真</label>
+              <input type="file" id="photo" accept="image/*" />
+            </div>
+            <button type="submit" id="register-btn">登録</button>
+            <button type="button" id="cancel-btn">キャンセル</button>
+          </form>
+        </div>
       </div>
     </div>
-    <div id="map"></div>
   </div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>

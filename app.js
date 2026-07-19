@@ -1,4 +1,4 @@
-const map = L.map('map').setView([35.6812, 139.7671], 13)
+const map = L.map('map', { zoomControl: false }).setView([35.6812, 139.7671], 13)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -18,6 +18,8 @@ try {
 let editingId = null
 const markerMap = {}
 let currentUser = null
+let allCafes = []
+let tempMarker = null
 
 function escapeHtml(str) {
   const div = document.createElement('div')
@@ -30,6 +32,106 @@ function tag(val, text) {
   return `<span class="info-tag ${cls}">${text}</span>`
 }
 
+/* ===== ビュー切り替え ===== */
+function showView(view) {
+  document.getElementById('view-list').style.display = view === 'list' ? 'block' : 'none'
+  document.getElementById('view-form').style.display = view === 'form' ? 'block' : 'none'
+  document.getElementById('view-detail').style.display = view === 'detail' ? 'block' : 'none'
+  document.getElementById('view-auth').style.display = view === 'auth' ? 'block' : 'none'
+}
+
+/* ===== カフェカード生成 ===== */
+function buildCafeCard(cafe) {
+  const photoHtml = cafe.photo_url
+    ? `<img class="card-photo" src="${escapeHtml(cafe.photo_url)}" alt="${escapeHtml(cafe.name)}" />`
+    : `<div class="card-photo" style="display:flex;align-items:center;justify-content:center;color:var(--color-sub);font-size:28px;">☕</div>`
+
+  return `
+    <div class="cafe-card" data-id="${cafe.id}">
+      ${photoHtml}
+      <div class="card-name">${escapeHtml(cafe.name)}</div>
+      <div class="card-address">${escapeHtml(cafe.address)}</div>
+      <div class="card-info">
+        ${cafe.hours ? `<span class="card-info-item">🕐 ${escapeHtml(cafe.hours)}</span>` : ''}
+      </div>
+      <div class="card-tags">
+        ${tag(cafe.wifi, 'Wifi')}
+        ${tag(cafe.power, '電源')}
+        ${tag(cafe.parking, '駐車場')}
+      </div>
+      <button class="card-detail-btn" data-id="${cafe.id}">詳細を見る</button>
+    </div>
+  `
+}
+
+function renderCafeList(cafes) {
+  const container = document.getElementById('cafe-list')
+  if (!cafes || cafes.length === 0) {
+    container.innerHTML = '<div class="empty-state">カフェが見つかりませんでした</div>'
+    return
+  }
+  container.innerHTML = cafes.map(buildCafeCard).join('')
+}
+
+/* ===== 詳細ビュー生成 ===== */
+function buildDetailContent(cafe) {
+  const likeCount = cafe.like_count ?? 0
+  const photoHtml = cafe.photo_url
+    ? `<img class="detail-photo" src="${escapeHtml(cafe.photo_url)}" alt="${escapeHtml(cafe.name)}" />`
+    : `<div class="detail-photo" style="display:flex;align-items:center;justify-content:center;color:var(--color-sub);font-size:36px;">☕</div>`
+
+  let ownerActions = ''
+  if (currentUser && cafe.user_id === currentUser.id) {
+    ownerActions = `
+      <div class="detail-actions">
+        <button class="popup-btn edit-btn detail-edit-btn" data-id="${cafe.id}">編集</button>
+        <button class="popup-btn delete-btn detail-delete-btn" data-id="${cafe.id}">削除</button>
+      </div>
+    `
+  }
+
+  let authSection = ''
+  if (currentUser) {
+    authSection = `
+      <div class="detail-like">
+        <span class="like-count" data-id="${cafe.id}">${likeCount}</span>
+        <button class="like-btn detail-like-btn" data-id="${cafe.id}">👍 いいね</button>
+      </div>
+      <div class="detail-comments">
+        <h3>コメント</h3>
+        <div class="comment-list" data-id="${cafe.id}"><div class="comment-empty">読込中...</div></div>
+        <form class="comment-form" data-id="${cafe.id}">
+          <input type="text" class="comment-nickname" placeholder="ニックネーム" required />
+          <input type="text" class="comment-text" placeholder="コメントを入力" required />
+          <button type="submit" class="comment-submit">送信</button>
+        </form>
+      </div>
+    `
+  }
+
+  return `
+    ${photoHtml}
+    <div class="detail-name">${escapeHtml(cafe.name)}</div>
+    <div class="detail-address">📍 ${escapeHtml(cafe.address)}</div>
+    ${cafe.hours ? `<div class="detail-info-row">🕐 ${escapeHtml(cafe.hours)}</div>` : ''}
+    <div class="detail-info-row">
+      ${tag(cafe.wifi, 'Wifi')} ${tag(cafe.power, '電源')} ${tag(cafe.parking, '駐車場')}
+    </div>
+    ${cafe.comment ? `<div class="detail-comment">${escapeHtml(cafe.comment)}</div>` : ''}
+    ${ownerActions}
+    ${authSection}
+  `
+}
+
+function showDetail(cafe) {
+  const container = document.getElementById('detail-content')
+  container.innerHTML = buildDetailContent(cafe)
+  showView('detail')
+  map.setView([cafe.lat, cafe.lng], 15)
+  loadDetailComments(cafe.id)
+}
+
+/* ===== マーカー・ポップアップ ===== */
 function buildPopupContent(cafe) {
   const likeCount = cafe.like_count ?? 0
   const lines = [
@@ -39,20 +141,16 @@ function buildPopupContent(cafe) {
   if (cafe.photo_url) {
     lines.push(`<img class="popup-photo" src="${escapeHtml(cafe.photo_url)}" alt="${escapeHtml(cafe.name)}" />`)
   }
-  if (cafe.comment) lines.push(`${escapeHtml(cafe.comment)}`)
-  if (cafe.hours) lines.push(`🕐 ${escapeHtml(cafe.hours)}`)
-  lines.push(
-    `${tag(cafe.wifi, 'Wifi')} ${tag(cafe.power, '電源')} ${tag(cafe.parking, '駐車場')}`
-  )
-  if (currentUser) {
-    if (cafe.user_id === currentUser.id) {
-      lines.push(
-        `<div class="popup-actions">`,
-        `  <button class="popup-btn edit-btn" data-id="${cafe.id}">編集</button>`,
-        `  <button class="popup-btn delete-btn" data-id="${cafe.id}">削除</button>`,
-        `</div>`
-      )
-    }
+  if (cafe.comment) lines.push(`<div class="popup-info-row">${escapeHtml(cafe.comment)}</div>`)
+  if (cafe.hours) lines.push(`<div class="popup-info-row">🕐 ${escapeHtml(cafe.hours)}</div>`)
+  lines.push(`<div class="popup-info-row">${tag(cafe.wifi, 'Wifi')} ${tag(cafe.power, '電源')} ${tag(cafe.parking, '駐車場')}</div>`)
+  if (currentUser && cafe.user_id === currentUser.id) {
+    lines.push(
+      `<div class="popup-actions">`,
+      `  <button class="popup-btn edit-btn" data-id="${cafe.id}">編集</button>`,
+      `  <button class="popup-btn delete-btn" data-id="${cafe.id}">削除</button>`,
+      `</div>`
+    )
     lines.push(
       `<div class="popup-like">`,
       `  <span class="like-count" data-id="${cafe.id}">${likeCount}</span>`,
@@ -71,8 +169,21 @@ function buildPopupContent(cafe) {
   return lines.join('<br>')
 }
 
+function createCafeIcon() {
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `<svg width="28" height="42" viewBox="0 0 28 42" fill="none">
+      <path d="M14 0C6.3 0 0 6.3 0 14C0 24.5 14 42 14 42S28 24.5 28 14C28 6.3 21.7 0 14 0Z" fill="#8A9A85"/>
+      <circle cx="14" cy="13" r="7" fill="white"/>
+    </svg>`,
+    iconSize: [28, 42],
+    iconAnchor: [14, 42],
+    popupAnchor: [0, -42]
+  })
+}
+
 function addMarker(cafe) {
-  const marker = L.marker([cafe.lat, cafe.lng])
+  const marker = L.marker([cafe.lat, cafe.lng], { icon: createCafeIcon() })
     .addTo(map)
     .bindPopup(buildPopupContent(cafe))
   marker._cafeId = cafe.id
@@ -92,6 +203,7 @@ function clearMarkers() {
   Object.keys(markerMap).forEach(k => delete markerMap[k])
 }
 
+/* ===== データ読み込み ===== */
 async function renderAllCafes() {
   clearMarkers()
   if (!supabaseClient) return
@@ -100,9 +212,24 @@ async function renderAllCafes() {
     console.error('Failed to load cafes:', error)
     return
   }
-  cafes.forEach(cafe => addMarker(cafe))
+  allCafes = cafes || []
+  allCafes.forEach(cafe => addMarker(cafe))
+  applySearchFilter()
 }
 
+function applySearchFilter() {
+  const query = document.getElementById('search-input').value.trim().toLowerCase()
+  const filtered = query
+    ? allCafes.filter(c =>
+        c.name.toLowerCase().includes(query) ||
+        c.address.toLowerCase().includes(query) ||
+        (c.comment && c.comment.toLowerCase().includes(query))
+      )
+    : allCafes
+  renderCafeList(filtered)
+}
+
+/* ===== コメント ===== */
 async function loadCommentsIntoPopup(cafeId) {
   const marker = markerMap[cafeId]
   if (!marker || !supabaseClient) return
@@ -123,43 +250,63 @@ async function loadCommentsIntoPopup(cafeId) {
     listEl.innerHTML = '<div class="comment-empty">エラーが発生しました</div>'
     return
   }
-
   if (!comments || comments.length === 0) {
     listEl.innerHTML = '<div class="comment-empty">コメントはまだありません</div>'
     return
   }
-
   listEl.innerHTML = comments.map(c =>
-    `<div class="comment-item"><b>${escapeHtml(c.nickname)}</b>: ${escapeHtml(c.text)}</div>`
+    `<div class="comment-item"><strong>${escapeHtml(c.nickname)}</strong>: ${escapeHtml(c.text)}</div>`
   ).join('')
 }
 
+async function loadDetailComments(cafeId) {
+  if (!supabaseClient) return
+  const container = document.getElementById('detail-content')
+  const listEl = container.querySelector('.comment-list')
+  if (!listEl) return
+  const { data: comments, error } = await supabaseClient
+    .from('comments')
+    .select('*')
+    .eq('cafe_id', cafeId)
+    .order('created_at', { ascending: true })
+  if (error) {
+    listEl.innerHTML = '<div class="comment-empty">エラーが発生しました</div>'
+    return
+  }
+  if (!comments || comments.length === 0) {
+    listEl.innerHTML = '<div class="comment-empty">コメントはまだありません</div>'
+    return
+  }
+  listEl.innerHTML = comments.map(c =>
+    `<div class="comment-item"><strong>${escapeHtml(c.nickname)}</strong>: ${escapeHtml(c.text)}</div>`
+  ).join('')
+}
+
+/* ===== 認証 ===== */
 function updateAuthUI(user) {
   const loggedOut = document.getElementById('auth-logged-out')
   const loggedIn = document.getElementById('auth-logged-in')
   const emailDisplay = document.getElementById('auth-email-display')
-  const formArea = document.getElementById('form-area')
 
   if (user) {
     currentUser = user
     loggedOut.style.display = 'none'
-    loggedIn.style.display = 'block'
+    loggedIn.style.display = 'flex'
     emailDisplay.textContent = user.email
-    formArea.style.display = 'block'
+    showView('list')
   } else {
     currentUser = null
-    loggedOut.style.display = 'block'
+    loggedOut.style.display = 'flex'
     loggedIn.style.display = 'none'
-    formArea.style.display = 'none'
-    document.getElementById('auth-email').value = ''
-    document.getElementById('auth-password').value = ''
+    showView('list')
   }
   renderAllCafes()
 }
 
+/* ===== フォームモード ===== */
 function setFormMode(mode, cafe) {
   const btn = document.getElementById('register-btn')
-  const title = document.querySelector('#form-area h2')
+  const title = document.getElementById('form-title')
   const cancelBtn = document.getElementById('cancel-btn')
 
   if (mode === 'edit' && cafe) {
@@ -169,28 +316,102 @@ function setFormMode(mode, cafe) {
     document.getElementById('lat').value = cafe.lat
     document.getElementById('lng').value = cafe.lng
     document.getElementById('comment').value = cafe.comment || ''
-    document.getElementById('hours').value = cafe.hours || ''
+    if (cafe.hours) {
+      const parts = cafe.hours.split('〜')
+      document.getElementById('hours-start').value = parts[0] || ''
+      document.getElementById('hours-end').value = parts[1] || ''
+    } else {
+      document.getElementById('hours-start').value = ''
+      document.getElementById('hours-end').value = ''
+    }
     document.getElementById('wifi').value = cafe.wifi || ''
     document.getElementById('power').value = cafe.power || ''
     document.getElementById('parking').value = cafe.parking || ''
     document.getElementById('photo').value = ''
+    setTempMarker(cafe.lat, cafe.lng)
+    map.setView([cafe.lat, cafe.lng], 15)
     btn.textContent = '更新'
     title.textContent = 'カフェを編集'
     cancelBtn.style.display = 'block'
   } else {
+    clearTempMarker()
     editingId = null
     document.getElementById('cafe-form').reset()
+    document.getElementById('lat').value = ''
+    document.getElementById('lng').value = ''
     btn.textContent = '登録'
     title.textContent = 'カフェを登録'
     cancelBtn.style.display = 'none'
   }
+  showView('form')
 }
 
+/* ===== フォーム送信 ===== */
+async function uploadPhoto(file) {
+  const ext = file.name.split('.').pop()
+  const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+  const { error } = await supabaseClient.storage.from('cafe-photos').upload(path, file)
+  if (error) throw error
+  const { data: { publicUrl } } = supabaseClient.storage.from('cafe-photos').getPublicUrl(path)
+  return publicUrl
+}
+
+/* ========================================
+   イベントリスナー
+   ======================================== */
+
+/* --- 仮ピン管理 --- */
+function clearTempMarker() {
+  if (tempMarker) {
+    map.removeLayer(tempMarker)
+    tempMarker = null
+  }
+}
+
+function setTempMarker(lat, lng) {
+  clearTempMarker()
+  tempMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      className: 'custom-marker',
+      html: `<svg width="24" height="36" viewBox="0 0 24 36" fill="none">
+        <path d="M12 0C5.4 0 0 5.4 0 12C0 21 12 36 12 36S24 21 24 12C24 5.4 18.6 0 12 0Z" fill="#D3D7CF" stroke="#8A9A85" stroke-width="1.5"/>
+        <circle cx="12" cy="11" r="5" fill="white"/>
+      </svg>`,
+      iconSize: [24, 36],
+      iconAnchor: [12, 36],
+      popupAnchor: [0, -36]
+    })
+  }).addTo(map)
+}
+
+/* --- 地図クリック→登録フォームが開いてるときだけ逆ジオコーディング --- */
 map.on('click', function (e) {
-  document.getElementById('lat').value = e.latlng.lat.toFixed(6)
-  document.getElementById('lng').value = e.latlng.lng.toFixed(6)
+  if (document.getElementById('view-form').style.display !== 'block') return
+
+  const lat = e.latlng.lat.toFixed(6)
+  const lng = e.latlng.lng.toFixed(6)
+  document.getElementById('lat').value = lat
+  document.getElementById('lng').value = lng
+  setTempMarker(e.latlng.lat, e.latlng.lng)
+
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`, {
+    headers: { 'User-Agent': 'CafeMap/1.0' }
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.display_name) {
+        var addr = data.display_name
+          .split(', ')
+          .filter(function (p) { return p !== '日本' && !/^\d{3}-?\d{4}$/.test(p) && !/^〒/.test(p) })
+          .reverse()
+          .join('')
+        if (addr) document.getElementById('address').value = addr
+      }
+    })
+    .catch(function (err) { console.warn('Reverse geocoding failed:', err) })
 })
 
+/* --- ポップアップ内のボタン・フォーム操作 --- */
 document.getElementById('map').addEventListener('click', async function (e) {
   const btn = e.target.closest('.popup-btn, .like-btn')
   if (!btn || !supabaseClient || !currentUser) return
@@ -218,17 +439,26 @@ document.getElementById('map').addEventListener('click', async function (e) {
     const { error: updateErr } = await supabaseClient
       .from('cafes').update({ like_count: newCount }).eq('id', id)
     if (updateErr) return
+
     const marker = markerMap[id]
-    if (!marker) return
-    const popup = marker.getPopup()
-    if (!popup) return
-    const el = popup.getElement()
-    if (!el) return
-    const countEl = el.querySelector('.like-count')
-    if (countEl) countEl.textContent = newCount
+    if (marker) {
+      const popup = marker.getPopup()
+      if (popup) {
+        const el = popup.getElement()
+        if (el) {
+          const countEl = el.querySelector('.like-count')
+          if (countEl) countEl.textContent = newCount
+        }
+      }
+    }
+    const detailCountEl = document.querySelector('#detail-content .like-count')
+    if (detailCountEl && detailCountEl.dataset.id == id) {
+      detailCountEl.textContent = newCount
+    }
   }
 })
 
+/* --- ポップアップ内のコメント送信 --- */
 document.getElementById('map').addEventListener('submit', async function (e) {
   const form = e.target.closest('.comment-form')
   if (!form || !supabaseClient || !currentUser) return
@@ -251,44 +481,230 @@ document.getElementById('map').addEventListener('submit', async function (e) {
   loadCommentsIntoPopup(id)
 })
 
-document.getElementById('auth-signup-btn').addEventListener('click', async function () {
+/* --- 住所から位置を検索（ジオコーディング） --- */
+document.getElementById('geocode-btn').addEventListener('click', async function () {
+  const address = document.getElementById('address').value.trim()
+  if (!address) return
+  const geocodeBtn = this
+  geocodeBtn.textContent = '⏳'
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=3`
+    const res = await fetch(url, { headers: { 'User-Agent': 'CafeMap/1.0' } })
+    const data = await res.json()
+    if (data && data.length > 0) {
+      const place = data[0]
+      const lat = parseFloat(place.lat)
+      const lng = parseFloat(place.lon)
+      document.getElementById('lat').value = lat.toFixed(6)
+      document.getElementById('lng').value = lng.toFixed(6)
+      setTempMarker(lat, lng)
+      map.setView([lat, lng], 16)
+    } else {
+      alert('住所が見つかりませんでした。\n「東京都渋谷区神宮前」のように市区町村から入力してください')
+    }
+  } catch (err) {
+    console.error('Geocoding failed:', err)
+    alert('位置情報の取得に失敗しました。しばらく経ってからもう一度試してください')
+  }
+  geocodeBtn.textContent = '🔍'
+})
+
+/* --- 現在地ボタン（Leafletコントロール） --- */
+var locateControl = L.control({ position: 'bottomright' })
+
+locateControl.onAdd = function () {
+  var btn = L.DomUtil.create('button', 'leaflet-control-locate-btn')
+  btn.innerHTML = '📍'
+  btn.title = '現在地を表示'
+  btn.onclick = function () {
+    if (!navigator.geolocation) {
+      alert('お使いのブラウザは位置情報に対応していません')
+      return
+    }
+    var cached = sessionStorage.getItem('cachedLat')
+    if (cached) {
+      var lat = parseFloat(cached)
+      var lng = parseFloat(sessionStorage.getItem('cachedLng'))
+      map.setView([lat, lng], 15)
+      setTempMarker(lat, lng)
+      document.getElementById('lat').value = lat.toFixed(6)
+      document.getElementById('lng').value = lng.toFixed(6)
+      return
+    }
+    btn.innerHTML = '⏳'
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        var lat = pos.coords.latitude
+        var lng = pos.coords.longitude
+        sessionStorage.setItem('cachedLat', lat)
+        sessionStorage.setItem('cachedLng', lng)
+        map.setView([lat, lng], 15)
+        setTempMarker(lat, lng)
+        document.getElementById('lat').value = lat.toFixed(6)
+        document.getElementById('lng').value = lng.toFixed(6)
+        btn.innerHTML = '📍'
+      },
+      function (err) {
+        var msg = '位置情報の取得に失敗しました'
+        if (err.code === 1) msg = '位置情報の取得が許可されていません'
+        else if (err.code === 2) msg = '位置情報を取得できませんでした'
+        else if (err.code === 3) msg = '位置情報の取得がタイムアウトしました'
+        alert(msg)
+        btn.innerHTML = '📍'
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+  return btn
+}
+
+locateControl.addTo(map)
+L.control.zoom({ position: 'bottomright' }).addTo(map)
+
+/* --- 認証 --- */
+function showAuthInfo(msg) {
+  document.getElementById('auth-info').textContent = msg
+}
+
+function clearAuthInfo() {
+  document.getElementById('auth-info').textContent = ''
+}
+
+function getAuthFields() {
   const email = document.getElementById('auth-email').value.trim()
   const password = document.getElementById('auth-password').value
-  if (!email || !password) return
-  const { error } = await supabaseClient.auth.signUp({ email, password })
-  if (error) {
-    alert(error.message)
+  return { email, password }
+}
+
+function validateAuthFields(email, password) {
+  if (email && !password) {
+    showAuthInfo('パスワードを入力してください')
+    return false
+  }
+  if (!email && password) {
+    showAuthInfo('メールアドレスを入力してください')
+    return false
+  }
+  if (!email && !password) {
+    showAuthInfo('メールアドレスとパスワードを入力してください')
+    return false
+  }
+  return true
+}
+
+let authMode = 'login'
+
+function focusAuthFirstField() {
+  setTimeout(() => document.getElementById('auth-email').focus(), 100)
+}
+
+function setAuthMode(mode) {
+  authMode = mode
+  const title = document.getElementById('auth-title')
+  const btn = document.getElementById('auth-submit-btn')
+  const switchEl = document.getElementById('auth-switch')
+  if (mode === 'login') {
+    title.textContent = 'ログイン'
+    btn.textContent = 'ログイン'
+    switchEl.innerHTML = '初めての方は <a href="#" id="auth-to-signup">新規登録</a>'
   } else {
-    alert('確認メールを送信しました。メールをご確認の上、ログインしてください。')
+    title.textContent = '新規登録'
+    btn.textContent = '新規登録'
+    switchEl.innerHTML = 'すでにアカウントをお持ちの方は <a href="#" id="auth-to-login">ログイン</a>'
+  }
+}
+
+/* ヘッダーのログインボタン */
+document.getElementById('header-login-btn').addEventListener('click', function () {
+  clearAuthInfo()
+  document.getElementById('auth-email').value = ''
+  document.getElementById('auth-password').value = ''
+  setAuthMode('login')
+  showView('auth')
+  focusAuthFirstField()
+})
+
+/* ヘッダーの新規登録ボタン */
+document.getElementById('header-signup-btn').addEventListener('click', function () {
+  clearAuthInfo()
+  document.getElementById('auth-email').value = ''
+  document.getElementById('auth-password').value = ''
+  setAuthMode('signup')
+  showView('auth')
+  focusAuthFirstField()
+})
+
+/* 認証ビューのキャンセルボタン */
+document.getElementById('auth-cancel-btn').addEventListener('click', function () {
+  showView('list')
+})
+
+/* 切り替えリンク（イベント委任） */
+document.getElementById('view-auth').addEventListener('click', function (e) {
+  if (e.target.id === 'auth-to-signup') {
+    e.preventDefault()
+    clearAuthInfo()
+    setAuthMode('signup')
+  } else if (e.target.id === 'auth-to-login') {
+    e.preventDefault()
+    clearAuthInfo()
+    setAuthMode('login')
   }
 })
 
-document.getElementById('auth-signin-btn').addEventListener('click', async function () {
-  const email = document.getElementById('auth-email').value.trim()
-  const password = document.getElementById('auth-password').value
-  if (!email || !password) return
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password })
-  if (error) {
-    alert(error.message)
-  }
+/* フォーム送信（Enterキー） */
+document.getElementById('auth-form').addEventListener('submit', async function (e) {
+  e.preventDefault()
+  await handleAuthSubmit()
 })
+
+/* 認証ボタンクリック */
+document.getElementById('auth-submit-btn').addEventListener('click', async function () {
+  await handleAuthSubmit()
+})
+
+async function handleAuthSubmit() {
+  const { email, password } = getAuthFields()
+  if (!validateAuthFields(email, password)) return
+  clearAuthInfo()
+  if (authMode === 'login') {
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password })
+    if (error) showAuthInfo(error.message)
+  } else {
+    const { error } = await supabaseClient.auth.signUp({ email, password })
+    if (error) {
+      showAuthInfo(error.message)
+    } else {
+      showAuthInfo('確認メールを送信しました。メールをご確認の上、ログインしてください。')
+      setAuthMode('login')
+    }
+  }
+}
 
 document.getElementById('auth-signout-btn').addEventListener('click', async function () {
   await supabaseClient.auth.signOut()
 })
 
+/* --- フォーム関連 --- */
 document.getElementById('cancel-btn').addEventListener('click', function () {
+  clearTempMarker()
   setFormMode('create')
+  showView('list')
 })
 
-async function uploadPhoto(file) {
-  const ext = file.name.split('.').pop()
-  const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-  const { error } = await supabaseClient.storage.from('cafe-photos').upload(path, file)
-  if (error) throw error
-  const { data: { publicUrl } } = supabaseClient.storage.from('cafe-photos').getPublicUrl(path)
-  return publicUrl
-}
+document.getElementById('back-from-form').addEventListener('click', function () {
+  clearTempMarker()
+  setFormMode('create')
+  showView('list')
+})
+
+document.getElementById('back-from-detail').addEventListener('click', function () {
+  showView('list')
+})
+
+document.getElementById('show-form-btn').addEventListener('click', function () {
+  setFormMode('create')
+})
 
 document.getElementById('cafe-form').addEventListener('submit', async function (e) {
   e.preventDefault()
@@ -299,7 +715,9 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
   const lat = parseFloat(document.getElementById('lat').value)
   const lng = parseFloat(document.getElementById('lng').value)
   const comment = document.getElementById('comment').value.trim()
-  const hours = document.getElementById('hours').value.trim()
+  const hoursStart = document.getElementById('hours-start').value
+  const hoursEnd = document.getElementById('hours-end').value
+  const hours = hoursStart && hoursEnd ? `${hoursStart}〜${hoursEnd}` : (hoursStart || hoursEnd || '')
   const wifi = document.getElementById('wifi').value || null
   const power = document.getElementById('power').value || null
   const parking = document.getElementById('parking').value || null
@@ -326,6 +744,7 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
     }
     renderAllCafes()
     setFormMode('create')
+    showView('list')
   } else {
     const { data, error } = await supabaseClient.from('cafes').insert(payload).select()
     if (error) {
@@ -333,9 +752,126 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
       return
     }
     addMarker(data[0])
+    allCafes.push(data[0])
+    applySearchFilter()
     this.reset()
+    showView('list')
+  }
+  clearTempMarker()
+})
+
+/* --- カードのクリック（詳細表示） --- */
+document.getElementById('map-area').addEventListener('click', function (e) {
+  const card = e.target.closest('.cafe-card')
+  if (card) {
+    const id = parseInt(card.dataset.id, 10)
+    const cafe = allCafes.find(c => c.id === id)
+    if (cafe) showDetail(cafe)
+    return
+  }
+
+  /* 詳細ビュー内のいいね・コメント・編集・削除 */
+  const likeBtn = e.target.closest('.detail-like-btn')
+  if (likeBtn) {
+    const id = parseInt(likeBtn.dataset.id, 10)
+    handleLike(id)
+    return
+  }
+
+  const editBtn = e.target.closest('.detail-edit-btn')
+  if (editBtn) {
+    const id = parseInt(editBtn.dataset.id, 10)
+    handleEdit(id)
+    return
+  }
+
+  const deleteBtn = e.target.closest('.detail-delete-btn')
+  if (deleteBtn) {
+    const id = parseInt(deleteBtn.dataset.id, 10)
+    handleDelete(id)
+    return
+  }
+
+  const commentForm = e.target.closest('.detail-comments .comment-form')
+  if (commentForm) {
+    e.preventDefault()
+    handleDetailComment(commentForm)
+    return
   }
 })
+
+async function handleLike(id) {
+  if (!supabaseClient || !currentUser) return
+  const { data: cafe, error: fetchErr } = await supabaseClient
+    .from('cafes').select('like_count').eq('id', id).single()
+  if (fetchErr || !cafe) return
+  const newCount = (cafe.like_count || 0) + 1
+  const { error: updateErr } = await supabaseClient
+    .from('cafes').update({ like_count: newCount }).eq('id', id)
+  if (updateErr) return
+
+  const detailCountEl = document.querySelector('#detail-content .like-count')
+  if (detailCountEl) detailCountEl.textContent = newCount
+
+  const marker = markerMap[id]
+  if (marker) {
+    const popup = marker.getPopup()
+    if (popup) {
+      const el = popup.getElement()
+      if (el) {
+        const countEl = el.querySelector('.like-count')
+        if (countEl) countEl.textContent = newCount
+      }
+    }
+  }
+}
+
+async function handleEdit(id) {
+  if (!supabaseClient) return
+  const { data: cafe, error } = await supabaseClient
+    .from('cafes').select('*').eq('id', id).single()
+  if (error || !cafe) return
+  setFormMode('edit', cafe)
+}
+
+async function handleDelete(id) {
+  if (!supabaseClient || !currentUser) return
+  if (!confirm('このカフェを削除してもよろしいですか？')) return
+  const { error } = await supabaseClient.from('cafes').delete().eq('id', id)
+  if (error) {
+    console.error('Failed to delete cafe:', error)
+    return
+  }
+  renderAllCafes()
+  showView('list')
+}
+
+async function handleDetailComment(form) {
+  if (!supabaseClient || !currentUser) return
+  const id = parseInt(form.dataset.id, 10)
+  const nickname = form.querySelector('.comment-nickname').value.trim()
+  const text = form.querySelector('.comment-text').value.trim()
+  if (!nickname || !text) return
+  const { error } = await supabaseClient.from('comments').insert({
+    cafe_id: id, nickname, text
+  })
+  if (error) {
+    console.error('Failed to add comment:', error)
+    return
+  }
+  form.querySelector('.comment-nickname').value = ''
+  form.querySelector('.comment-text').value = ''
+  loadDetailComments(id)
+}
+
+/* --- 検索 --- */
+document.getElementById('search-input').addEventListener('input', function () {
+  applySearchFilter()
+})
+
+/* ========================================
+   初期化
+   ======================================== */
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
   updateAuthUI(session?.user ?? null)

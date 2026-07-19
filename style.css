@@ -1,3 +1,24 @@
+/* ========================================
+   Cafe Map - デザインシステム
+   ======================================== */
+
+/* --- カラー変数 --- */
+:root {
+  --color-main: #B2BCAC;
+  --color-bg: #F7F4F0;
+  --color-sub: #D3D7CF;
+  --color-accent: #8A9A85;
+  --color-text: #6D7972;
+  --color-white: #FFFFFF;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --font-base: 'Zen Maru Gothic', sans-serif;
+}
+
+/* --- リセット --- */
 * {
   margin: 0;
   padding: 0;
@@ -6,135 +27,350 @@
 
 html, body {
   height: 100%;
-  font-family: 'Noto Sans JP', sans-serif;
-  background: #F7F4F0;
-  color: #6D7972;
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
+
+/* ========================================
+   レイアウト
+   ======================================== */
 
 #app {
   display: flex;
+  flex-direction: column;
   height: 100vh;
 }
 
-#sidebar {
-  width: 340px;
-  padding: 28px 24px;
-  overflow-y: auto;
-  background: #F7F4F0;
-  border-right: 1px solid #D3D7CF;
-}
-
-#sidebar h1 {
-  font-family: 'Caveat', cursive;
-  font-size: 28px;
-  font-weight: 700;
-  color: #8A9A85;
-  margin-bottom: 24px;
-  letter-spacing: 1px;
-}
-
-/* ===== Auth Area ===== */
-#auth-area {
-  margin-bottom: 20px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid #D3D7CF;
-}
-
-#auth-area .field {
-  margin-bottom: 10px;
-}
-
-#auth-area input {
-  font-size: 13px;
-  padding: 8px 10px;
-}
-
-#auth-area label {
-  font-size: 12px;
-  margin-bottom: 3px;
-  color: #8A9A85;
-}
-
-.auth-buttons {
+/* --- ヘッダー --- */
+#header {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-sub);
+  flex-shrink: 0;
+}
+
+.site-title {
+  font-family: var(--font-base);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 2px;
+}
+
+#header-right {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 10px;
 }
 
-.auth-buttons button {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'Noto Sans JP', sans-serif;
+/* Leaflet コントロール（右下）用 */
+.leaflet-control-locate-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  background: var(--color-white);
+  font-size: 20px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background 0.2s;
+  line-height: 1;
+  clear: both;
 }
 
-#auth-signup-btn {
-  background: #B2BCAC;
-  color: #fff;
+.leaflet-control-locate-btn:hover {
+  background: var(--color-bg);
 }
 
-#auth-signup-btn:hover {
-  background: #8A9A85;
+/* 右下のズームコントロールと現在地ボタンを同じ幅に */
+.leaflet-right .leaflet-control-zoom {
+  margin-bottom: 4px;
 }
 
-#auth-signin-btn {
-  background: #D3D7CF;
-  color: #6D7972;
+.leaflet-right .leaflet-control-zoom a {
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 18px;
 }
 
-#auth-signin-btn:hover {
-  background: #B2BCAC;
-  color: #fff;
+/* --- 認証（ヘッダー内：ボタンのみ） --- */
+#auth-logged-out {
+  display: flex;
+  gap: 6px;
+}
+
+#auth-logged-out button {
+  padding: 7px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#header-login-btn {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+#header-login-btn:hover {
+  background: var(--color-accent);
+}
+
+#header-signup-btn {
+  background: var(--color-sub);
+  color: var(--color-text);
+}
+
+#header-signup-btn:hover {
+  background: var(--color-main);
+  color: var(--color-white);
 }
 
 #auth-logged-in {
   display: flex;
   align-items: center;
-}
-
-#auth-user-info {
-  display: flex;
-  align-items: center;
   gap: 10px;
-  width: 100%;
 }
 
 #auth-email-display {
-  flex: 1;
-  font-size: 13px;
-  color: #6D7972;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 12px;
+  color: var(--color-text);
 }
 
 #auth-signout-btn {
   padding: 6px 14px;
-  border: 1px solid #D3D7CF;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text);
   font-size: 12px;
-  font-family: 'Noto Sans JP', sans-serif;
-  color: #6D7972;
+  font-family: var(--font-base);
   cursor: pointer;
   transition: background 0.2s;
 }
 
 #auth-signout-btn:hover {
-  background: #F7F4F0;
+  background: var(--color-bg);
 }
 
-/* ===== Form Area ===== */
-#form-area h2 {
+/* --- メイン（地図のみ） --- */
+#main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 地図エリア --- */
+#map-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* ========================================
+   カフェ一覧ビュー（フローティング内）
+   ======================================== */
+
+#view-list {
+  display: flex;
+  flex-direction: column;
+}
+
+#view-list #cafe-list {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+#list-header {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+#search-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search-input:focus {
+  outline: none;
+  border-color: var(--color-main);
+  box-shadow: 0 0 0 3px rgba(178, 188, 172, 0.2);
+}
+
+#search-input::placeholder {
+  color: var(--color-sub);
+}
+
+/* --- カフェカード --- */
+.cafe-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.cafe-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-photo {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  background: var(--color-bg);
+}
+
+.card-name {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.card-address {
+  font-size: 12px;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.card-info-item {
+  color: var(--color-text);
+}
+
+.card-tags {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.card-detail-btn {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-main);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-accent);
+  font-size: 12px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-detail-btn:hover {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-sub);
+  font-size: 14px;
+}
+
+/* --- 追加ボタン --- */
+.add-btn {
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed var(--color-sub);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.add-btn:hover {
+  border-color: var(--color-main);
+  color: var(--color-accent);
+  background: rgba(178, 188, 172, 0.05);
+}
+
+/* ========================================
+   フローティングカード（地図上）
+   ======================================== */
+
+#view-list,
+#view-form,
+#view-detail,
+#view-auth {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 360px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  background: var(--color-white);
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 20px;
+  z-index: 1000;
+}
+
+.back-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 12px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: all 0.2s;
   margin-bottom: 16px;
-  color: #8A9A85;
+}
+
+.back-btn:hover {
+  background: var(--color-bg);
+  border-color: var(--color-main);
+}
+
+#view-form h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 16px;
 }
 
 .field {
@@ -155,88 +391,372 @@ label {
   font-size: 12px;
   font-weight: 500;
   margin-bottom: 4px;
-  color: #8A9A85;
+  color: var(--color-accent);
 }
 
 input, select {
   width: 100%;
   padding: 9px 11px;
-  border: 1px solid #D3D7CF;
-  border-radius: 8px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-sm);
   font-size: 14px;
-  font-family: 'Noto Sans JP', sans-serif;
-  background: #fff;
-  color: #6D7972;
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="time"] {
+  font-size: 14px;
+  font-family: var(--font-base);
+}
+
+.input-with-btn {
+  display: flex;
+  gap: 6px;
+}
+
+.input-with-btn input {
+  flex: 1;
+}
+
+#geocode-btn {
+  padding: 9px 12px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#geocode-btn:hover {
+  background: var(--color-bg);
+  border-color: var(--color-main);
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: #B2BCAC;
-  box-shadow: 0 0 0 3px rgba(178, 188, 172, 0.25);
-}
-
-::placeholder {
-  color: #D3D7CF;
+  border-color: var(--color-main);
+  box-shadow: 0 0 0 3px rgba(178, 188, 172, 0.2);
 }
 
 #register-btn {
   width: 100%;
   padding: 11px;
-  background: #B2BCAC;
-  color: #fff;
+  background: var(--color-main);
+  color: var(--color-white);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 15px;
   font-weight: 500;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: var(--font-base);
   cursor: pointer;
   margin-top: 4px;
   transition: background 0.2s;
 }
 
 #register-btn:hover {
-  background: #8A9A85;
+  background: var(--color-accent);
 }
 
 #cancel-btn {
   width: 100%;
   padding: 11px;
-  background: #D3D7CF;
-  color: #6D7972;
+  background: var(--color-sub);
+  color: var(--color-text);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 15px;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: var(--font-base);
   cursor: pointer;
   margin-top: 8px;
   display: none;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 #cancel-btn:hover {
-  background: #B2BCAC;
-  color: #fff;
+  background: var(--color-main);
+  color: var(--color-white);
 }
 
-/* ===== Photo ===== */
 #photo {
   font-size: 13px;
   padding: 7px;
-  font-family: 'Noto Sans JP', sans-serif;
 }
 
-.popup-photo {
+/* ========================================
+   カフェ詳細ビュー
+   ======================================== */
+
+.detail-photo {
   width: 100%;
-  max-height: 160px;
+  height: 180px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  background: var(--color-bg);
+}
+
+.detail-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.detail-address {
+  font-size: 13px;
+  color: var(--color-text);
+  margin-bottom: 12px;
+}
+
+.detail-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.detail-comment {
+  font-size: 13px;
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  line-height: 1.6;
+}
+
+/* 詳細内のいいね・コメント */
+.detail-like {
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-like .like-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+  min-width: 20px;
+}
+
+.detail-like .like-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--color-main);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-accent);
+  font-size: 13px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detail-like .like-btn:hover {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+.detail-actions {
+  margin: 12px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.detail-actions .popup-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.detail-actions .edit-btn {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+.detail-actions .edit-btn:hover {
+  background: var(--color-accent);
+}
+
+.detail-actions .delete-btn {
+  background: var(--color-sub);
+  color: var(--color-text);
+}
+
+.detail-actions .delete-btn:hover {
+  background: #c0a0a0;
+  color: var(--color-white);
+}
+
+.detail-comments {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-sub);
+}
+
+.detail-comments h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+}
+
+.comment-list {
+  font-size: 13px;
+  max-height: 180px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+.comment-item {
+  padding: 6px 0;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--color-bg);
+}
+
+.comment-item strong {
+  color: var(--color-accent);
+}
+
+.comment-empty {
+  color: var(--color-sub);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.comment-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.comment-form .comment-nickname {
+  flex: 2;
+  min-width: 70px;
+  padding: 7px 9px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.comment-form .comment-text {
+  flex: 3;
+  min-width: 120px;
+  padding: 7px 9px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-family: var(--font-base);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.comment-submit {
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-main);
+  color: var(--color-white);
+  font-size: 12px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.comment-submit:hover {
+  background: var(--color-accent);
+}
+
+/* ========================================
+   ログインビュー（パネル内）
+   ======================================== */
+
+#view-auth h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 16px;
+}
+
+#auth-form .auth-submit-btn,
+.auth-submit-btn {
+  width: 100%;
+  padding: 11px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-base);
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+#auth-submit-btn {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+#auth-submit-btn:hover {
+  background: var(--color-accent);
+}
+
+#auth-info {
+  font-size: 12px;
+  color: #c0784a;
+  line-height: 1.4;
   margin: 4px 0;
 }
 
-/* ===== Popup ===== */
+.auth-switch {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+.auth-switch a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-switch a:hover {
+  color: var(--color-main);
+}
+
+/* ========================================
+   ポップアップ（Leaflet マーカー）
+   ======================================== */
+
+.popup-photo {
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin: 4px 0;
+}
+
+.popup-info-row {
+  font-size: 12px;
+  margin: 2px 0;
+  color: var(--color-text);
+}
+
 .popup-actions {
-  margin-top: 10px;
+  margin-top: 8px;
   display: flex;
   gap: 6px;
 }
@@ -247,174 +767,59 @@ input:focus, select:focus {
   border: none;
   border-radius: 6px;
   font-size: 12px;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: var(--font-base);
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.edit-btn {
-  background: #B2BCAC;
-  color: #fff;
-}
-
-.edit-btn:hover {
-  background: #8A9A85;
-}
-
-.delete-btn {
-  background: #D3D7CF;
-  color: #6D7972;
-}
-
-.delete-btn:hover {
-  background: #c0a0a0;
-  color: #fff;
-}
-
-/* ===== Like ===== */
 .popup-like {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.like-count {
-  font-size: 14px;
-  font-weight: 700;
-  color: #8A9A85;
-  min-width: 20px;
-}
-
-.like-btn {
-  padding: 4px 12px;
-  border: 1px solid #B2BCAC;
-  border-radius: 6px;
-  background: #fff;
-  color: #8A9A85;
-  font-size: 12px;
-  font-family: 'Noto Sans JP', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-
-.like-btn:hover {
-  background: #B2BCAC;
-  color: #fff;
-}
-
-/* ===== Comments ===== */
-.comment-list {
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid #D3D7CF;
-  font-size: 12px;
-  max-height: 120px;
-  overflow-y: auto;
-}
-
-.comment-item {
-  padding: 4px 0;
-  line-height: 1.5;
-}
-
-.comment-item strong {
-  color: #8A9A85;
-}
-
-.comment-empty {
-  color: #B2BCAC;
-  font-style: italic;
-}
-
-.comment-form {
   margin-top: 8px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  align-items: center;
+  gap: 6px;
 }
 
-.comment-form .comment-nickname {
-  flex: 2;
-  min-width: 60px;
-  padding: 5px 7px;
-  border: 1px solid #D3D7CF;
-  border-radius: 6px;
-  font-size: 11px;
-  font-family: 'Noto Sans JP', sans-serif;
-}
-
-.comment-form .comment-text {
-  flex: 3;
-  min-width: 100px;
-  padding: 5px 7px;
-  border: 1px solid #D3D7CF;
-  border-radius: 6px;
-  font-size: 11px;
-  font-family: 'Noto Sans JP', sans-serif;
-}
-
-.comment-submit {
-  padding: 5px 12px;
-  border: none;
-  border-radius: 6px;
-  background: #B2BCAC;
-  color: #fff;
-  font-size: 11px;
-  font-family: 'Noto Sans JP', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.comment-submit:hover {
-  background: #8A9A85;
-}
-
-/* ===== Map ===== */
-#map {
-  flex: 1;
-  height: 100vh;
-}
-
-/* ===== Leaflet popup restyle ===== */
+/* Leaflet popup カスタマイズ */
 .leaflet-popup-content-wrapper {
-  border-radius: 12px;
-  box-shadow: 0 3px 14px rgba(0,0,0,0.1);
-  font-family: 'Noto Sans JP', sans-serif;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-base);
 }
 
 .leaflet-popup-content {
   margin: 12px 14px;
   font-size: 13px;
-  color: #6D7972;
+  color: var(--color-text);
   line-height: 1.6;
 }
 
 .leaflet-popup-content h3 {
-  font-family: 'Caveat', cursive;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  color: #8A9A85;
+  color: var(--color-accent);
   margin-bottom: 4px;
 }
 
-.leaflet-popup-tip {
-  box-shadow: none;
+/* --- カスタムマーカーピン --- */
+.custom-marker {
+  background: none !important;
+  border: none !important;
 }
 
-/* ===== Info tags (wifi, power, parking) ===== */
+/* ========================================
+   情報タグ（Wifi/電源/駐車場）
+   ======================================== */
 .info-tag {
   display: inline-block;
-  padding: 1px 8px;
-  border-radius: 4px;
+  padding: 2px 10px;
+  border-radius: 20px;
   font-size: 11px;
   font-weight: 500;
-  margin-right: 4px;
 }
 
 .info-tag.yes {
   background: #e8f0e4;
-  color: #8A9A85;
+  color: var(--color-accent);
 }
 
 .info-tag.no {
@@ -423,6 +828,74 @@ input:focus, select:focus {
 }
 
 .info-tag.unknown {
-  background: #eaeaea;
-  color: #B2BCAC;
+  background: var(--color-bg);
+  color: var(--color-sub);
+}
+
+/* ========================================
+   レスポンシブ
+   ======================================== */
+
+/* --- タブレット（768px〜1024px） --- */
+@media (max-width: 1024px) {
+  #view-list,
+  #view-form,
+  #view-detail,
+  #view-auth {
+    width: 320px;
+  }
+}
+
+/* --- スマートフォン（〜768px） --- */
+@media (max-width: 768px) {
+  #header {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .site-title {
+    font-size: 18px;
+  }
+
+  #header-right {
+    width: 100%;
+  }
+
+  #auth-logged-out {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  #map-area {
+    height: 100%;
+  }
+
+  #map-area {
+    height: 55vh;
+    flex: none;
+  }
+
+  #map {
+    height: 100%;
+  }
+
+  #view-list,
+  #view-form,
+  #view-detail,
+  #view-auth {
+    width: calc(100% - 16px);
+    top: 8px;
+    right: 8px;
+    max-height: calc(100% - 16px);
+    padding: 14px;
+  }
+
+  .card-photo {
+    height: 90px;
+  }
+
+  .detail-photo {
+    height: 140px;
+  }
 }
