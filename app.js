@@ -48,13 +48,15 @@ function selectedTags(container) {
 
 async function loadTagsForCafe(cafeId) {
   if (!supabaseClient) return []
-  const { data } = await supabaseClient.from('cafe_tags').select('tag, user_id').eq('cafe_id', cafeId)
+  const { data, error } = await supabaseClient.from('cafe_tags').select('tag, user_id').eq('cafe_id', cafeId)
+  if (error) { console.error('loadTagsForCafe:', error); return [] }
   return data || []
 }
 
 async function loadAllTags() {
   if (!supabaseClient) return {}
-  const { data } = await supabaseClient.from('cafe_tags').select('cafe_id, tag, user_id')
+  const { data, error } = await supabaseClient.from('cafe_tags').select('cafe_id, tag, user_id')
+  if (error) { console.error('loadAllTags:', error); return {} }
   if (!data) return {}
   const map = {}
   data.forEach(r => {
@@ -68,10 +70,12 @@ async function loadAllTags() {
 
 async function saveTags(cafeId, tags) {
   if (!supabaseClient || !currentUser) return
-  await supabaseClient.from('cafe_tags').delete().eq('cafe_id', cafeId).eq('user_id', currentUser.id)
+  const { error: delErr } = await supabaseClient.from('cafe_tags').delete().eq('cafe_id', cafeId).eq('user_id', currentUser.id)
+  if (delErr) { console.error('saveTags delete:', delErr); return }
   if (tags.length === 0) return
   const rows = tags.map(tag => ({ cafe_id: cafeId, user_id: currentUser.id, tag }))
-  await supabaseClient.from('cafe_tags').insert(rows)
+  const { error: insErr } = await supabaseClient.from('cafe_tags').insert(rows)
+  if (insErr) console.error('saveTags insert:', insErr)
 }
 
 function escapeHtml(str) {
@@ -317,7 +321,9 @@ async function renderAllCafes() {
 }
 
 function applySearchFilter() {
-  const query = document.getElementById('search-input').value.trim().toLowerCase()
+  const searchInput = document.getElementById('search-input')
+  if (!searchInput) return
+  const query = searchInput.value.trim().toLowerCase()
   const activeTags = Array.from(document.querySelectorAll('.tag-filter-btn.active')).map(b => b.dataset.tag)
 
   let filtered = allCafes.filter(c => {
@@ -342,6 +348,7 @@ function applySearchFilter() {
 
 function initTagFilter() {
   const container = document.getElementById('tag-filter')
+  if (!container) return
   const moods = Object.entries(MOOD_TAGS)
   const moodHtml = moods.map(([label, tags]) =>
     `<button class="mood-shortcut" data-tags="${tags.join(',')}">${label} ▾</button>`
@@ -392,10 +399,12 @@ function initTagFilter() {
 
 async function getRecommendedTags() {
   if (!supabaseClient || !currentUser) return {}
-  const { data: likes } = await supabaseClient.from('likes').select('cafe_id').eq('user_id', currentUser.id)
+  const { data: likes, error: lErr } = await supabaseClient.from('likes').select('cafe_id').eq('user_id', currentUser.id)
+  if (lErr) { console.error('getRecommendedTags likes:', lErr); return {} }
   if (!likes || likes.length === 0) return {}
   const cafeIds = likes.map(l => l.cafe_id)
-  const { data: tags } = await supabaseClient.from('cafe_tags').select('tag').in('cafe_id', cafeIds)
+  const { data: tags, error: tErr } = await supabaseClient.from('cafe_tags').select('tag').in('cafe_id', cafeIds)
+  if (tErr) { console.error('getRecommendedTags tags:', tErr); return {} }
   if (!tags) return {}
   const weights = {}
   tags.forEach(r => { weights[r.tag] = (weights[r.tag] || 0) + 1 })
@@ -511,12 +520,15 @@ function setFormMode(mode, cafe) {
     title.textContent = 'カフェを編集'
     cancelBtn.style.display = 'block'
 
+    const editId = cafe.id
     loadTagsForCafe(cafe.id).then(tags => {
+      if (editingId !== editId) return
       const userTags = tags.filter(t => t.user_id === currentUser?.id).map(t => t.tag)
-      container.querySelectorAll('.tag-check').forEach(cb => {
+      const checkboxes = container.querySelectorAll('.tag-check')
+      checkboxes.forEach(cb => {
         if (userTags.includes(cb.value)) cb.checked = true
       })
-    })
+    }).catch(() => {})
   } else {
     clearTempMarker()
     editingId = null
@@ -987,28 +999,28 @@ document.getElementById('map-area').addEventListener('click', async function (e)
   const likeBtn = e.target.closest('.detail-like-btn')
   if (likeBtn) {
     const id = parseInt(likeBtn.dataset.id, 10)
-    handleLike(id)
+    await handleLike(id)
     return
   }
 
   const editBtn = e.target.closest('.detail-edit-btn')
   if (editBtn) {
     const id = parseInt(editBtn.dataset.id, 10)
-    handleEdit(id)
+    await handleEdit(id)
     return
   }
 
   const deleteBtn = e.target.closest('.detail-delete-btn')
   if (deleteBtn) {
     const id = parseInt(deleteBtn.dataset.id, 10)
-    handleDelete(id)
+    await handleDelete(id)
     return
   }
 
   const commentForm = e.target.closest('.detail-comments .comment-form')
   if (commentForm) {
     e.preventDefault()
-    handleDetailComment(commentForm)
+    await handleDetailComment(commentForm)
     return
   }
 })
