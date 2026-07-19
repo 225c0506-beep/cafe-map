@@ -319,8 +319,6 @@ async function renderAllCafes() {
 function applySearchFilter() {
   const query = document.getElementById('search-input').value.trim().toLowerCase()
   const activeTags = Array.from(document.querySelectorAll('.tag-filter-btn.active')).map(b => b.dataset.tag)
-  const activeMood = document.querySelector('.mood-btn.active')?.dataset.mood || null
-  const moodTagList = activeMood ? (MOOD_TAGS[activeMood] || []) : []
 
   let filtered = allCafes.filter(c => {
     if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query) && !(c.comment && c.comment.toLowerCase().includes(query))) return false
@@ -328,17 +326,13 @@ function applySearchFilter() {
       const tags = c._tags || {}
       if (!activeTags.some(t => tags[t])) return false
     }
-    if (moodTagList.length > 0) {
-      const tags = c._tags || {}
-      if (!moodTagList.some(t => tags[t])) return false
-    }
     return true
   })
 
-  if (moodTagList.length > 0) {
+  if (activeTags.length > 0) {
     filtered.sort((a, b) => {
-      const aCount = moodTagList.filter(t => (a._tags || {})[t]).length
-      const bCount = moodTagList.filter(t => (b._tags || {})[t]).length
+      const aCount = activeTags.filter(t => (a._tags || {})[t]).length
+      const bCount = activeTags.filter(t => (b._tags || {})[t]).length
       return bCount - aCount
     })
   }
@@ -348,33 +342,37 @@ function applySearchFilter() {
 
 function initTagFilter() {
   const container = document.getElementById('tag-filter')
-  container.innerHTML = TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('') +
-    '<button class="tag-filter-btn tag-filter-reset" id="tag-filter-reset">✕ リセット</button>'
+  container.innerHTML =
+    '<div class="mood-shortcuts">' +
+    Object.entries(MOOD_TAGS).map(([label, tags]) =>
+      `<button class="mood-shortcut" data-tags="${tags.join(',')}">${label} ▾</button>`
+    ).join('') +
+    '</div>' +
+    '<div class="tag-buttons">' +
+    TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('') +
+    '<button class="tag-filter-btn tag-filter-reset" id="tag-filter-reset">✕ リセット</button>' +
+    '</div>'
+
   container.addEventListener('click', function (e) {
+    const shortcut = e.target.closest('.mood-shortcut')
+    if (shortcut) {
+      const tags = shortcut.dataset.tags.split(',')
+      const btns = container.querySelectorAll('.tag-filter-btn')
+      btns.forEach(b => b.classList.toggle('active', tags.includes(b.dataset.tag)))
+      container.querySelectorAll('.mood-shortcut').forEach(s => s.classList.remove('active'))
+      shortcut.classList.add('active')
+      applySearchFilter()
+      return
+    }
+
     const btn = e.target.closest('.tag-filter-btn')
     if (!btn) return
     if (btn.id === 'tag-filter-reset') {
       container.querySelectorAll('.tag-filter-btn.active').forEach(b => b.classList.remove('active'))
+      container.querySelectorAll('.mood-shortcut.active').forEach(s => s.classList.remove('active'))
     } else {
       btn.classList.toggle('active')
-    }
-    applySearchFilter()
-  })
-}
-
-function initMoodFilter() {
-  const container = document.getElementById('mood-filter')
-  container.innerHTML = '<div class="mood-label">気分で選ぶ</div>' +
-    Object.keys(MOOD_TAGS).map(m => `<button class="mood-btn" data-mood="${m}">${m}</button>`).join('') +
-    '<button class="mood-btn mood-reset" id="mood-reset">✕ リセット</button>'
-  container.addEventListener('click', function (e) {
-    const btn = e.target.closest('.mood-btn')
-    if (!btn) return
-    if (btn.id === 'mood-reset') {
-      container.querySelectorAll('.mood-btn.active').forEach(b => b.classList.remove('active'))
-    } else {
-      container.querySelectorAll('.mood-btn.active').forEach(b => b.classList.remove('active'))
-      btn.classList.add('active')
+      container.querySelectorAll('.mood-shortcut.active').forEach(s => s.classList.remove('active'))
     }
     applySearchFilter()
   })
@@ -1059,6 +1057,15 @@ document.getElementById('search-input').addEventListener('input', function () {
   applySearchFilter()
 })
 
+/* --- フィルター表示切替 --- */
+document.getElementById('filter-toggle').addEventListener('click', function () {
+  const section = document.getElementById('filter-section')
+  const isHidden = section.style.display === 'none'
+  section.style.display = isHidden ? 'block' : 'none'
+  this.textContent = isHidden ? '✕' : '⋮'
+  this.title = isHidden ? 'フィルターを閉じる' : 'フィルターを表示'
+})
+
 /* ========================================
    初期化
    ======================================== */
@@ -1092,4 +1099,3 @@ document.getElementById('dark-toggle').addEventListener('change', function () {
 applyDarkMode(darkEnabled)
 
 initTagFilter()
-initMoodFilter()

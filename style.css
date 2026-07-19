@@ -257,6 +257,11 @@ html, body {
   margin-bottom: 12px;
 }
 
+#search-row {
+  display: flex;
+  gap: 6px;
+}
+
 #search-input {
   width: 100%;
   padding: 10px 14px;
@@ -267,6 +272,28 @@ html, body {
   background: var(--color-bg);
   color: var(--color-text);
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#filter-toggle {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--color-sub);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+#filter-toggle:hover {
+  border-color: var(--color-main);
+  color: var(--color-accent);
+  background: var(--color-bg);
 }
 
 #search-input:focus {
@@ -496,25 +523,17 @@ html, body {
   border-color: var(--color-sub);
 }
 
-/* --- 気分フィルター（一覧上部） --- */
-#mood-filter {
+/* --- 気分ショートカット（タグフィルター内） --- */
+.mood-shortcuts {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 4px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid var(--color-sub);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-sub);
 }
 
-.mood-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-accent);
-  margin-right: 4px;
-}
-
-.mood-btn {
+.mood-shortcut {
   padding: 5px 12px;
   border: 1px solid var(--color-main);
   border-radius: 14px;
@@ -527,27 +546,21 @@ html, body {
   transition: all 0.2s;
 }
 
-.mood-btn:hover {
+.mood-shortcut:hover {
   background: var(--color-main);
   color: var(--color-white);
 }
 
-.mood-btn.active {
+.mood-shortcut.active {
   background: var(--color-accent);
   color: var(--color-white);
   border-color: var(--color-accent);
 }
 
-.mood-reset {
-  color: var(--color-sub);
-  font-size: 10px;
-  border-color: transparent;
-  background: transparent;
-}
-
-.mood-reset:hover {
-  color: var(--color-text);
-  border-color: var(--color-sub);
+.tag-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .empty-state {
@@ -1312,14 +1325,30 @@ input:focus, select:focus {
   color: var(--color-white);
 }
 
-[data-theme="dark"] .mood-btn.active {
+[data-theme="dark"] .mood-shortcut {
+  background: #1a1d1a;
+  border-color: var(--color-sub);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .mood-shortcut:hover {
+  background: var(--color-main);
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .mood-shortcut.active {
   background: var(--color-accent);
   border-color: var(--color-accent);
   color: var(--color-white);
 }
 
-[data-theme="dark"] #mood-filter {
-  border-top-color: var(--color-sub);
+[data-theme="dark"] .mood-shortcuts {
+  border-bottom-color: var(--color-sub);
+}
+
+[data-theme="dark"] #filter-toggle {
+  background: #1a1d1a;
+  border-color: var(--color-sub);
 }
 
 

@@ -42,9 +42,13 @@
         <!-- カフェ一覧（地図上フローティング） -->
         <div id="view-list">
           <div id="list-header">
-            <input type="text" id="search-input" placeholder="カフェを検索..." />
-            <div id="mood-filter"></div>
-            <div id="tag-filter"></div>
+            <div id="search-row">
+              <input type="text" id="search-input" placeholder="カフェを検索..." />
+              <button id="filter-toggle" title="フィルターを表示">⋮</button>
+            </div>
+            <div id="filter-section" style="display:none">
+              <div id="tag-filter"></div>
+            </div>
           </div>
           <div id="cafe-list"></div>
           <button id="show-form-btn" class="add-btn">＋ カフェを登録</button>
