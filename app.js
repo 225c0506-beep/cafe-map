@@ -342,28 +342,37 @@ function applySearchFilter() {
 
 function initTagFilter() {
   const container = document.getElementById('tag-filter')
+  const moods = Object.entries(MOOD_TAGS)
+  const moodHtml = moods.map(([label, tags]) =>
+    `<button class="mood-shortcut" data-tags="${tags.join(',')}">${label} ▾</button>`
+  ).join('') +
+    `<button class="mood-shortcut" id="mood-recommend" data-tags="__recommend__">あなたへのおすすめ ▾</button>`
+
   container.innerHTML =
     '<div class="mood-section">' +
     '<div class="mood-section-label">気分</div>' +
-    '<div class="mood-shortcuts">' +
-    Object.entries(MOOD_TAGS).map(([label, tags]) =>
-      `<button class="mood-shortcut" data-tags="${tags.join(',')}">${label} ▾</button>`
-    ).join('') +
-    '</div>' +
+    '<div class="mood-shortcuts">' + moodHtml + '</div>' +
     '</div>' +
     '<div class="tag-buttons">' +
     TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('') +
     '<button class="tag-filter-btn tag-filter-reset" id="tag-filter-reset">✕ リセット</button>' +
     '</div>'
 
-  container.addEventListener('click', function (e) {
+  container.addEventListener('click', async function (e) {
     const shortcut = e.target.closest('.mood-shortcut')
     if (shortcut) {
-      const tags = shortcut.dataset.tags.split(',')
-      const btns = container.querySelectorAll('.tag-filter-btn')
-      btns.forEach(b => b.classList.toggle('active', tags.includes(b.dataset.tag)))
       container.querySelectorAll('.mood-shortcut').forEach(s => s.classList.remove('active'))
       shortcut.classList.add('active')
+      const btns = container.querySelectorAll('.tag-filter-btn')
+
+      if (shortcut.id === 'mood-recommend') {
+        const tagWeights = await getRecommendedTags()
+        const topTags = Object.entries(tagWeights).sort((a, b) => b[1] - a[1]).slice(0, 5).map(e => e[0])
+        btns.forEach(b => b.classList.toggle('active', topTags.includes(b.dataset.tag)))
+      } else {
+        const tags = shortcut.dataset.tags.split(',')
+        btns.forEach(b => b.classList.toggle('active', tags.includes(b.dataset.tag)))
+      }
       applySearchFilter()
       return
     }
@@ -379,6 +388,18 @@ function initTagFilter() {
     }
     applySearchFilter()
   })
+}
+
+async function getRecommendedTags() {
+  if (!supabaseClient || !currentUser) return {}
+  const { data: likes } = await supabaseClient.from('likes').select('cafe_id').eq('user_id', currentUser.id)
+  if (!likes || likes.length === 0) return {}
+  const cafeIds = likes.map(l => l.cafe_id)
+  const { data: tags } = await supabaseClient.from('cafe_tags').select('tag').in('cafe_id', cafeIds)
+  if (!tags) return {}
+  const weights = {}
+  tags.forEach(r => { weights[r.tag] = (weights[r.tag] || 0) + 1 })
+  return weights
 }
 
 /* ===== コメント ===== */
