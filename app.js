@@ -4,14 +4,16 @@ function setTileLayer(dark) {
   if (currentTileLayer) map.removeLayer(currentTileLayer)
   var url = dark
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-  var attr = dark
-    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-    : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a>'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+  var attr = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
   currentTileLayer = L.tileLayer(url, { maxZoom: 19, attribution: attr }).addTo(map)
 }
 
-const map = L.map('map', { zoomControl: false }).setView([35.6812, 139.7671], 13)
+const map = L.map('map', { zoomControl: false }).setView([35.6895, 139.7000], 14)
+
+document.getElementById('home-btn').addEventListener('click', function () {
+  map.setView([35.6895, 139.7000], 14)
+})
 
 const SUPABASE_URL = 'https://blsfojnxwwyzjrunqlfg.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_vCzIleUkZIZLkBXIAjmn_g_FQCCG8i0'
