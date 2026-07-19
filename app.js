@@ -1,9 +1,17 @@
-const map = L.map('map', { zoomControl: false }).setView([35.6812, 139.7671], 13)
+var currentTileLayer
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map)
+function setTileLayer(dark) {
+  if (currentTileLayer) map.removeLayer(currentTileLayer)
+  var url = dark
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  var attr = dark
+    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
+    : '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a>'
+  currentTileLayer = L.tileLayer(url, { maxZoom: 19, attribution: attr }).addTo(map)
+}
+
+const map = L.map('map', { zoomControl: false }).setView([35.6812, 139.7671], 13)
 
 const SUPABASE_URL = 'https://blsfojnxwwyzjrunqlfg.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_vCzIleUkZIZLkBXIAjmn_g_FQCCG8i0'
@@ -884,3 +892,23 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   updateAuthUI(session?.user ?? null)
 })
+
+/* ========================================
+   ダークモード
+   ======================================== */
+
+var darkEnabled = localStorage.getItem('cafeMapDark') === 'true'
+
+function applyDarkMode(dark) {
+  darkEnabled = dark
+  localStorage.setItem('cafeMapDark', dark ? 'true' : 'false')
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+  document.getElementById('dark-toggle').checked = dark
+  setTileLayer(dark)
+}
+
+document.getElementById('dark-toggle').addEventListener('change', function () {
+  applyDarkMode(this.checked)
+})
+
+applyDarkMode(darkEnabled)
