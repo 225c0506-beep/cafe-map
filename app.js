@@ -343,10 +343,13 @@ function applySearchFilter() {
 function initTagFilter() {
   const container = document.getElementById('tag-filter')
   container.innerHTML =
+    '<div class="mood-section">' +
+    '<div class="mood-section-label">気分</div>' +
     '<div class="mood-shortcuts">' +
     Object.entries(MOOD_TAGS).map(([label, tags]) =>
       `<button class="mood-shortcut" data-tags="${tags.join(',')}">${label} ▾</button>`
     ).join('') +
+    '</div>' +
     '</div>' +
     '<div class="tag-buttons">' +
     TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('') +
@@ -1062,7 +1065,7 @@ document.getElementById('filter-toggle').addEventListener('click', function () {
   const section = document.getElementById('filter-section')
   const isHidden = section.style.display === 'none'
   section.style.display = isHidden ? 'block' : 'none'
-  this.textContent = isHidden ? '✕' : '⋮'
+  this.textContent = isHidden ? '✕ 閉じる' : '絞り込み ▾'
   this.title = isHidden ? 'フィルターを閉じる' : 'フィルターを表示'
 })
 

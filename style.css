@@ -276,18 +276,20 @@ html, body {
 
 #filter-toggle {
   flex-shrink: 0;
-  width: 38px;
+  padding: 0 12px;
   height: 38px;
   border: 1px solid var(--color-sub);
   border-radius: var(--radius-md);
   background: var(--color-white);
   color: var(--color-text);
-  font-size: 18px;
+  font-size: 12px;
+  font-family: var(--font-base);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 #filter-toggle:hover {
@@ -524,13 +526,24 @@ html, body {
 }
 
 /* --- 気分ショートカット（タグフィルター内） --- */
+.mood-section {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-sub);
+}
+
+.mood-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-sub);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
 .mood-shortcuts {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-sub);
 }
 
 .mood-shortcut {
@@ -1343,6 +1356,10 @@ input:focus, select:focus {
 }
 
 [data-theme="dark"] .mood-shortcuts {
+  border-bottom-color: var(--color-sub);
+}
+
+[data-theme="dark"] .mood-section {
   border-bottom-color: var(--color-sub);
 }
 
