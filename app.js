@@ -410,7 +410,7 @@ map.on('click', function (e) {
         if (addr) document.getElementById('address').value = addr
       }
     })
-    .catch(function (err) { console.warn('Reverse geocoding failed:', err) })
+    .catch(function (err) { console.warn('Reverse geocoding:', err) })
 })
 
 /* --- ポップアップ内のボタン・フォーム操作 --- */
@@ -434,29 +434,7 @@ document.getElementById('map').addEventListener('click', async function (e) {
     }
     renderAllCafes()
   } else if (btn.classList.contains('like-btn')) {
-    const { data: cafe, error: fetchErr } = await supabaseClient
-      .from('cafes').select('like_count').eq('id', id).single()
-    if (fetchErr || !cafe) return
-    const newCount = (cafe.like_count || 0) + 1
-    const { error: updateErr } = await supabaseClient
-      .from('cafes').update({ like_count: newCount }).eq('id', id)
-    if (updateErr) return
-
-    const marker = markerMap[id]
-    if (marker) {
-      const popup = marker.getPopup()
-      if (popup) {
-        const el = popup.getElement()
-        if (el) {
-          const countEl = el.querySelector('.like-count')
-          if (countEl) countEl.textContent = newCount
-        }
-      }
-    }
-    const detailCountEl = document.querySelector('#detail-content .like-count')
-    if (detailCountEl && detailCountEl.dataset.id == id) {
-      detailCountEl.textContent = newCount
-    }
+    await handleLike(id)
   }
 })
 
@@ -591,7 +569,19 @@ function validateAuthFields(email, password) {
     showAuthInfo('メールアドレスとパスワードを入力してください')
     return false
   }
+  if (password && password.length < 6) {
+    showAuthInfo('パスワードは6文字以上で入力してください')
+    return false
+  }
   return true
+}
+
+function translateAuthError(msg) {
+  if (msg === 'Password should be at least 6 characters') return 'パスワードは6文字以上で入力してください'
+  if (msg.includes('Invalid login credentials')) return 'メールアドレスまたはパスワードが違います'
+  if (msg.includes('Email not confirmed')) return 'メールアドレスが確認されていません'
+  if (msg.includes('User already registered')) return 'このメールアドレスは既に登録されています'
+  return msg
 }
 
 let authMode = 'login'
@@ -678,7 +668,7 @@ async function handleAuthSubmit() {
   clearAuthInfo()
   if (authMode === 'login') {
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password })
-    if (error) showAuthInfo(error.message)
+    if (error) showAuthInfo(translateAuthError(error.message))
   } else {
     const nickname = document.getElementById('auth-nickname').value.trim()
     if (!nickname) {
@@ -817,28 +807,27 @@ document.getElementById('map-area').addEventListener('click', function (e) {
 
 async function handleLike(id) {
   if (!supabaseClient || !currentUser) return
-  const { data: cafe, error: fetchErr } = await supabaseClient
-    .from('cafes').select('like_count').eq('id', id).single()
-  if (fetchErr || !cafe) return
-  const newCount = (cafe.like_count || 0) + 1
-  const { error: updateErr } = await supabaseClient
-    .from('cafes').update({ like_count: newCount }).eq('id', id)
-  if (updateErr) return
 
-  const detailCountEl = document.querySelector('#detail-content .like-count')
-  if (detailCountEl) detailCountEl.textContent = newCount
-
-  const marker = markerMap[id]
-  if (marker) {
-    const popup = marker.getPopup()
-    if (popup) {
-      const el = popup.getElement()
-      if (el) {
-        const countEl = el.querySelector('.like-count')
-        if (countEl) countEl.textContent = newCount
-      }
-    }
+  const { data: existing } = await supabaseClient
+    .from('likes').select('id').eq('cafe_id', id).eq('user_id', currentUser.id).maybeSingle()
+  if (existing) {
+    alert('すでにいいねしています')
+    return
   }
+
+  const { error: insertErr } = await supabaseClient
+    .from('likes').insert({ cafe_id: id, user_id: currentUser.id })
+  if (insertErr) return
+
+  const { data: cafe } = await supabaseClient
+    .from('cafes').select('like_count').eq('id', id).single()
+  const newCount = (cafe?.like_count || 0) + 1
+  await supabaseClient.from('cafes').update({ like_count: newCount }).eq('id', id)
+
+  const els = document.querySelectorAll('.like-count')
+  els.forEach(function (el) {
+    if (el.dataset.id == id) el.textContent = newCount
+  })
 }
 
 async function handleEdit(id) {
