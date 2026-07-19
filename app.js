@@ -31,6 +31,42 @@ let currentUser = null
 let allCafes = []
 let tempMarker = null
 
+const TAG_LIST = ['作業向き', 'おしゃべりOK', '隠れ家', '静か', 'コスパ◎', '長居OK', '写真映え', '電源あり', 'Wi-Fi快適', '一人でも入りやすい']
+
+function selectedTags(container) {
+  const tags = []
+  ;(container || document).querySelectorAll('.tag-check:checked').forEach(cb => tags.push(cb.value))
+  return tags
+}
+
+async function loadTagsForCafe(cafeId) {
+  if (!supabaseClient) return []
+  const { data } = await supabaseClient.from('cafe_tags').select('tag, user_id').eq('cafe_id', cafeId)
+  return data || []
+}
+
+async function loadAllTags() {
+  if (!supabaseClient) return {}
+  const { data } = await supabaseClient.from('cafe_tags').select('cafe_id, tag, user_id')
+  if (!data) return {}
+  const map = {}
+  data.forEach(r => {
+    if (!map[r.cafe_id]) map[r.cafe_id] = {}
+    if (!map[r.cafe_id][r.tag]) map[r.cafe_id][r.tag] = { count: 0, users: [] }
+    map[r.cafe_id][r.tag].count++
+    map[r.cafe_id][r.tag].users.push(r.user_id)
+  })
+  return map
+}
+
+async function saveTags(cafeId, tags) {
+  if (!supabaseClient || !currentUser) return
+  await supabaseClient.from('cafe_tags').delete().eq('cafe_id', cafeId).eq('user_id', currentUser.id)
+  if (tags.length === 0) return
+  const rows = tags.map(tag => ({ cafe_id: cafeId, user_id: currentUser.id, tag }))
+  await supabaseClient.from('cafe_tags').insert(rows)
+}
+
 function escapeHtml(str) {
   const div = document.createElement('div')
   div.textContent = str
@@ -56,6 +92,13 @@ function buildCafeCard(cafe) {
     ? `<img class="card-photo" src="${escapeHtml(cafe.photo_url)}" alt="${escapeHtml(cafe.name)}" />`
     : `<div class="card-photo" style="display:flex;align-items:center;justify-content:center;color:var(--color-sub);font-size:28px;">☕</div>`
 
+  const tags = cafe._tags || {}
+  const tagEntries = Object.entries(tags)
+  const tagHtml = tagEntries.slice(0, 3).map(([t, v]) =>
+    `<span class="cafe-tag">${escapeHtml(t)}</span>`
+  ).join('')
+  const moreTag = tagEntries.length > 3 ? `<span class="cafe-tag cafe-tag-more">+${tagEntries.length - 3}</span>` : ''
+
   return `
     <div class="cafe-card" data-id="${cafe.id}">
       ${photoHtml}
@@ -69,6 +112,7 @@ function buildCafeCard(cafe) {
         ${tag(cafe.power, '電源')}
         ${tag(cafe.parking, '駐車場')}
       </div>
+      ${tagEntries.length > 0 ? `<div class="card-ctags">${tagHtml}${moreTag}</div>` : ''}
       <button class="card-detail-btn" data-id="${cafe.id}">詳細を見る</button>
     </div>
   `
@@ -89,6 +133,26 @@ function buildDetailContent(cafe) {
   const photoHtml = cafe.photo_url
     ? `<img class="detail-photo" src="${escapeHtml(cafe.photo_url)}" alt="${escapeHtml(cafe.name)}" />`
     : `<div class="detail-photo" style="display:flex;align-items:center;justify-content:center;color:var(--color-sub);font-size:36px;">☕</div>`
+
+  const tags = cafe._tags || {}
+  const tagEntries = Object.entries(tags)
+  const tagHtml = tagEntries.map(([t, v]) =>
+    `<span class="cafe-tag cafe-tag-detail">${escapeHtml(t)} <span class="tag-count">${v.count}</span></span>`
+  ).join('')
+
+  let tagsSection = tagEntries.length > 0
+    ? `<div class="detail-tags">${tagHtml}</div>`
+    : '<div class="detail-tags" style="color:var(--color-sub);font-size:12px;">タグはまだありません</div>'
+
+  let tagAddSection = ''
+  if (currentUser) {
+    tagAddSection = `
+      <div class="detail-tag-add">
+        <div class="tag-picker" id="detail-tag-picker"></div>
+        <button class="tag-add-btn" id="detail-tag-submit" data-id="${cafe.id}">選択したタグを追加</button>
+      </div>
+    `
+  }
 
   let ownerActions = ''
   if (currentUser && cafe.user_id === currentUser.id) {
@@ -129,6 +193,8 @@ function buildDetailContent(cafe) {
     </div>
     <div class="detail-info-row" style="font-size:12px;color:var(--color-sub);">登録者: ${escapeHtml(cafe.nickname || '不明')}</div>
     ${cafe.comment ? `<div class="detail-comment">${escapeHtml(cafe.comment)}</div>` : ''}
+    ${tagsSection}
+    ${tagAddSection}
     ${ownerActions}
     ${authSection}
   `
@@ -139,12 +205,22 @@ function showDetail(cafe) {
   container.innerHTML = buildDetailContent(cafe)
   showView('detail')
   map.setView([cafe.lat, cafe.lng], 15)
+
+  const picker = document.getElementById('detail-tag-picker')
+  if (picker) {
+    picker.innerHTML = TAG_LIST.map(t => `<label class="tag-option"><input type="checkbox" class="tag-check" value="${t}" /> ${t}</label>`).join('')
+  }
   loadDetailComments(cafe.id)
 }
 
 /* ===== マーカー・ポップアップ ===== */
 function buildPopupContent(cafe) {
   const likeCount = cafe.like_count ?? 0
+  const tags = cafe._tags || {}
+  const tagEntries = Object.entries(tags)
+  const tagHtml = tagEntries.length > 0
+    ? `<div style="margin:4px 0;display:flex;flex-wrap:wrap;gap:3px;">${tagEntries.slice(0, 4).map(([t]) => `<span class="cafe-tag" style="font-size:10px;">${escapeHtml(t)}</span>`).join('')}${tagEntries.length > 4 ? `<span class="cafe-tag cafe-tag-more" style="font-size:10px;">+${tagEntries.length - 4}</span>` : ''}</div>`
+    : ''
   const lines = [
     `<h3>${escapeHtml(cafe.name)}</h3>`,
     `📍 ${escapeHtml(cafe.address)}`
@@ -155,6 +231,7 @@ function buildPopupContent(cafe) {
   if (cafe.comment) lines.push(`<div class="popup-info-row">${escapeHtml(cafe.comment)}</div>`)
   if (cafe.hours) lines.push(`<div class="popup-info-row">🕐 ${escapeHtml(cafe.hours)}</div>`)
   lines.push(`<div class="popup-info-row">${tag(cafe.wifi, 'Wifi')} ${tag(cafe.power, '電源')} ${tag(cafe.parking, '駐車場')}</div>`)
+  if (tagHtml) lines.push(tagHtml)
   if (currentUser && cafe.user_id === currentUser.id) {
     lines.push(
       `<div class="popup-actions">`,
@@ -224,20 +301,42 @@ async function renderAllCafes() {
     return
   }
   allCafes = cafes || []
-  allCafes.forEach(cafe => addMarker(cafe))
+  const tagsMap = await loadAllTags()
+  allCafes.forEach(cafe => {
+    cafe._tags = tagsMap[cafe.id] || {}
+    addMarker(cafe)
+  })
   applySearchFilter()
 }
 
 function applySearchFilter() {
   const query = document.getElementById('search-input').value.trim().toLowerCase()
-  const filtered = query
-    ? allCafes.filter(c =>
-        c.name.toLowerCase().includes(query) ||
-        c.address.toLowerCase().includes(query) ||
-        (c.comment && c.comment.toLowerCase().includes(query))
-      )
-    : allCafes
+  const activeTag = document.querySelector('.tag-filter-btn.active')?.dataset.tag || null
+  const filtered = allCafes.filter(c => {
+    if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query) && !(c.comment && c.comment.toLowerCase().includes(query))) return false
+    if (activeTag) {
+      const tags = c._tags || {}
+      if (!tags[activeTag]) return false
+    }
+    return true
+  })
   renderCafeList(filtered)
+}
+
+function initTagFilter() {
+  const container = document.getElementById('tag-filter')
+  container.innerHTML = TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('')
+  container.addEventListener('click', function (e) {
+    const btn = e.target.closest('.tag-filter-btn')
+    if (!btn) return
+    if (btn.classList.contains('active')) {
+      btn.classList.remove('active')
+    } else {
+      container.querySelectorAll('.tag-filter-btn').forEach(b => b.classList.remove('active'))
+      btn.classList.add('active')
+    }
+    applySearchFilter()
+  })
 }
 
 /* ===== コメント ===== */
@@ -321,6 +420,9 @@ function setFormMode(mode, cafe) {
   const title = document.getElementById('form-title')
   const cancelBtn = document.getElementById('cancel-btn')
 
+  const container = document.getElementById('form-tags')
+  container.innerHTML = TAG_LIST.map(t => `<label class="tag-option"><input type="checkbox" class="tag-check" value="${t}" /> ${t}</label>`).join('')
+
   if (mode === 'edit' && cafe) {
     editingId = cafe.id
     document.getElementById('name').value = cafe.name
@@ -345,6 +447,13 @@ function setFormMode(mode, cafe) {
     btn.textContent = '更新'
     title.textContent = 'カフェを編集'
     cancelBtn.style.display = 'block'
+
+    loadTagsForCafe(cafe.id).then(tags => {
+      const userTags = tags.filter(t => t.user_id === currentUser?.id).map(t => t.tag)
+      container.querySelectorAll('.tag-check').forEach(cb => {
+        if (userTags.includes(cb.value)) cb.checked = true
+      })
+    })
   } else {
     clearTempMarker()
     editingId = null
@@ -757,6 +866,7 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
       console.error('Failed to update cafe:', error)
       return
     }
+    await saveTags(editingId, selectedTags(document.getElementById('form-tags')))
     renderAllCafes()
     setFormMode('create')
     showView('list')
@@ -766,6 +876,7 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
       console.error('Failed to add cafe:', error)
       return
     }
+    await saveTags(data[0].id, selectedTags(document.getElementById('form-tags')))
     addMarker(data[0])
     allCafes.push(data[0])
     applySearchFilter()
@@ -776,7 +887,7 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
 })
 
 /* --- カードのクリック（詳細表示） --- */
-document.getElementById('map-area').addEventListener('click', function (e) {
+document.getElementById('map-area').addEventListener('click', async function (e) {
   const card = e.target.closest('.cafe-card')
   if (card) {
     const id = parseInt(card.dataset.id, 10)
@@ -785,7 +896,31 @@ document.getElementById('map-area').addEventListener('click', function (e) {
     return
   }
 
-  /* 詳細ビュー内のいいね・コメント・編集・削除 */
+  /* 詳細ビュー内のいいね・コメント・編集・削除・タグ追加 */
+  const tagSubmit = e.target.closest('#detail-tag-submit')
+  if (tagSubmit) {
+    const id = parseInt(tagSubmit.dataset.id, 10)
+    const tags = selectedTags(document.getElementById('detail-tag-picker'))
+    if (tags.length === 0) return
+    const rows = tags.map(tag => ({ cafe_id: id, user_id: currentUser.id, tag }))
+    const { error } = await supabaseClient.from('cafe_tags').upsert(rows, { onConflict: 'cafe_id,user_id,tag', ignoreDuplicates: true })
+    if (error) console.error('Failed to add tags:', error)
+    const cafe = allCafes.find(c => c.id === id)
+    if (cafe) {
+      cafe._tags = await loadTagsForCafe(id).then(rows => {
+        const m = {}
+        rows.forEach(r => {
+          if (!m[r.tag]) m[r.tag] = { count: 0, users: [] }
+          m[r.tag].count++
+          m[r.tag].users.push(r.user_id)
+        })
+        return m
+      })
+      showDetail(cafe)
+    }
+    return
+  }
+
   const likeBtn = e.target.closest('.detail-like-btn')
   if (likeBtn) {
     const id = parseInt(likeBtn.dataset.id, 10)
@@ -914,3 +1049,5 @@ document.getElementById('dark-toggle').addEventListener('change', function () {
 })
 
 applyDarkMode(darkEnabled)
+
+initTagFilter()

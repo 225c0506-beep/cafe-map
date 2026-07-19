@@ -43,6 +43,7 @@
         <div id="view-list">
           <div id="list-header">
             <input type="text" id="search-input" placeholder="カフェを検索..." />
+            <div id="tag-filter"></div>
           </div>
           <div id="cafe-list"></div>
           <button id="show-form-btn" class="add-btn">＋ カフェを登録</button>
@@ -136,6 +137,10 @@
             <div class="field">
               <label for="photo">写真</label>
               <input type="file" id="photo" accept="image/*" />
+            </div>
+            <div class="field">
+              <label>タグを選択</label>
+              <div class="tag-picker" id="form-tags"></div>
             </div>
             <button type="submit" id="register-btn">登録</button>
             <button type="button" id="cancel-btn">キャンセル</button>
