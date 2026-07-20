@@ -1320,9 +1320,12 @@ input:focus, select:focus {
     font-size: 14px !important;
   }
 
+  .leaflet-control-container {
+    z-index: 1002 !important;
+  }
+
   .leaflet-control-container .leaflet-bottom.leaflet-right {
     bottom: 48px !important;
-    z-index: 1002 !important;
   }
 }
 
