@@ -525,6 +525,33 @@ html, body {
   border-color: var(--color-sub);
 }
 
+.tag-filter-mode-row {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.tag-filter-mode-btn {
+  padding: 3px 10px;
+  border: 1px solid var(--color-sub);
+  border-radius: 14px;
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 10px;
+  font-family: var(--font-base);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tag-filter-mode-btn:hover {
+  border-color: var(--color-main);
+}
+
+.tag-filter-mode-btn.and {
+  background: var(--color-accent);
+  color: var(--color-white);
+  border-color: var(--color-accent);
+}
+
 /* --- 気分ショートカット（タグフィルター内） --- */
 .mood-section {
   margin-bottom: 10px;
@@ -1268,6 +1295,11 @@ input:focus, select:focus {
     font-size: 9px;
   }
 
+  .tag-filter-mode-btn {
+    font-size: 9px;
+    padding: 2px 8px;
+  }
+
   .cafe-card {
     padding: 10px;
     margin-bottom: 8px;
@@ -1517,6 +1549,22 @@ input:focus, select:focus {
 [data-theme="dark"] #filter-toggle {
   background: #1a1d1a;
   border-color: var(--color-sub);
+}
+
+[data-theme="dark"] .tag-filter-mode-btn {
+  background: #1a1d1a;
+  border-color: var(--color-sub);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .tag-filter-mode-btn:hover {
+  border-color: var(--color-main);
+}
+
+[data-theme="dark"] .tag-filter-mode-btn.and {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
 }
 
 [data-theme="dark"] .mobile-menu-btn {

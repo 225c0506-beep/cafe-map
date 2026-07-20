@@ -25,6 +25,9 @@ const DUMMY_USERS = [
   { email: 'demo2@cafemap.com', password: 'demo1234', nickname: 'スイーツ好きアヤ' }
 ]
 
+// 既存ユーザーのメールアドレス（takuwatasan@gmail.com の持ち主用）
+const OWNER_EMAIL = 'takuwatasan@gmail.com'
+
 const TAG_DATA = [
   ['SIDEWALK COFFEE ROASTERS', '作業向き',0],['SIDEWALK COFFEE ROASTERS', '静か',0],['SIDEWALK COFFEE ROASTERS', '電源あり',0],['SIDEWALK COFFEE ROASTERS', 'Wi-Fi快適',0],['SIDEWALK COFFEE ROASTERS', '一人でも入りやすい',0],
   ['JINNAN CAFE', '作業向き',0],['JINNAN CAFE', '電源あり',0],['JINNAN CAFE', 'Wi-Fi快適',0],['JINNAN CAFE', '長居OK',0],
@@ -78,37 +81,79 @@ const NEW_CAFES = [
 ]
 
 ;(async () => {
-  // 1. 既存ユーザーを取得
-  const { data: { users } } = await admin.auth.admin.listUsers()
-  const existing = {}
-  users.forEach(u => { existing[u.email] = u })
-  log('既存ユーザー: ' + Object.keys(existing).join(', '))
+  // 1. 全ユーザー取得 — admin.auth.admin.listUsers() / fetch 両方試す
+  let userMap = {} // email → { id, email, nickname }
 
-  // 2. デモユーザー作成（service_roleでRLS bypass）
-  for (const u of DUMMY_USERS) {
-    if (existing[u.email]) {
-      log('既存: ' + u.email)
-      continue
-    }
-    const { data, error } = await admin.auth.admin.createUser({
-      email: u.email, password: u.password,
-      email_confirm: true,
-      user_metadata: { nickname: u.nickname }
+  // 方法A: REST API 直叩き（GoTrue admin API）
+  try {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/admin/users', {
+      headers: { 'apikey': SERVICE_ROLE_KEY, 'Authorization': 'Bearer ' + SERVICE_ROLE_KEY }
     })
-    if (error) { log('作成エラー: ' + u.email + ' - ' + error.message); return }
-    log('作成: ' + u.email + ' → ' + data.user.id)
+    if (res.ok) {
+      const body = await res.json()
+      if (Array.isArray(body)) {
+        body.forEach(u => {
+          const nick = (u.user_metadata && u.user_metadata.nickname) || u.email.split('@')[0]
+          userMap[u.email] = { id: u.id, email: u.email, nickname: nick }
+        })
+      } else if (body.users && Array.isArray(body.users)) {
+        body.users.forEach(u => {
+          const nick = (u.user_metadata && u.user_metadata.nickname) || u.email.split('@')[0]
+          userMap[u.email] = { id: u.id, email: u.email, nickname: nick }
+        })
+      }
+    }
+  } catch(e) { log('REST API取得エラー: ' + e.message) }
+
+  // 方法B: SDK admin.auth.admin.listUsers()
+  if (Object.keys(userMap).length === 0) {
+    try {
+      const { data, error } = await admin.auth.admin.listUsers()
+      if (!error && data && data.users) {
+        data.users.forEach(u => {
+          const nick = (u.user_metadata && u.user_metadata.nickname) || u.email.split('@')[0]
+          userMap[u.email] = { id: u.id, email: u.email, nickname: nick }
+        })
+      }
+    } catch(e) { log('SDK取得エラー: ' + e.message) }
   }
 
-  // 3. 再度ユーザー一覧を取得してIDマップ作成
-  const { data: { users: allUsers } } = await admin.auth.admin.listUsers()
-  const userIds = {}
-  allUsers.forEach(u => { userIds[u.email] = u.id })
+  log('Supabase上の全ユーザー: ' + Object.keys(userMap).join(', '))
 
-  const myId = userIds[Object.keys(existing)[0]]
-  const demo1Id = userIds['demo1@cafemap.com']
-  const demo2Id = userIds['demo2@cafemap.com']
+  // 2. 不足ユーザーがいればフォーム入力を促す
+  if (!userMap[OWNER_EMAIL] || !userMap['demo1@cafemap.com'] || !userMap['demo2@cafemap.com']) {
+    log('❌ 一部ユーザーが取得できませんでした。')
+    log('下記フォームに Supabase管理画面 → Authentication → Users のIDを貼り付けて「続行」を押してください')
+    const formDiv = document.createElement('div')
+    formDiv.style.cssText = 'margin:16px;padding:16px;background:#f5f5f5;border-radius:8px'
+    formDiv.innerHTML = `
+      <p style="margin:0 0 8px;font-weight:bold">ユーザーIDを入力（Supabase管理画面 → Authentication → Users）</p>
+      <label>${OWNER_EMAIL}: <input id="inp_owner" size="40" placeholder="UUID"></label><br>
+      <label>demo1@cafemap.com: <input id="inp_demo1" size="40" placeholder="UUID"></label><br>
+      <label>demo2@cafemap.com: <input id="inp_demo2" size="40" placeholder="UUID"></label><br>
+      <button id="btn_continue" style="margin-top:8px;padding:4px 16px">続行</button>
+    `
+    document.body.insertBefore(formDiv, L)
+    await new Promise(resolve => {
+      document.getElementById('btn_continue').onclick = () => {
+        const o = document.getElementById('inp_owner').value.trim()
+        const d1 = document.getElementById('inp_demo1').value.trim()
+        const d2 = document.getElementById('inp_demo2').value.trim()
+        if (o) userMap[OWNER_EMAIL] = { id: o, email: OWNER_EMAIL, nickname: 'オーナー' }
+        if (d1) userMap['demo1@cafemap.com'] = { id: d1, email: 'demo1@cafemap.com', nickname: 'カフェ巡りユウキ' }
+        if (d2) userMap['demo2@cafemap.com'] = { id: d2, email: 'demo2@cafemap.com', nickname: 'スイーツ好きアヤ' }
+        formDiv.remove()
+        resolve()
+      }
+    })
+  }
+
+  const myId = userMap[OWNER_EMAIL] && userMap[OWNER_EMAIL].id
+  const demo1Id = userMap['demo1@cafemap.com'] && userMap['demo1@cafemap.com'].id
+  const demo2Id = userMap['demo2@cafemap.com'] && userMap['demo2@cafemap.com'].id
   const uidList = [myId, demo1Id, demo2Id]
-  log('ユーザーID: ' + uidList.join(', '))
+  log('使用するユーザーID: ' + uidList.join(', '))
+  if (!myId || !demo1Id || !demo2Id) { log('❌ ユーザーIDが揃いません。中断'); return }
 
   // 4. 新規カフェ挿入（なければ）
   const { data: existingCafes } = await admin.from('cafes').select('name')
@@ -130,7 +175,8 @@ const NEW_CAFES = [
   if (!cafes || cafes.length === 0) { log('カフェがありません'); return }
   const cafeMap = {}
   cafes.forEach(c => { cafeMap[c.name] = c.id })
-  log('カフェ: ' + cafes.length + '件')
+  log('カフェ一覧: ' + Object.keys(cafeMap).join(', '))
+  log('ユーザーID配列: ' + JSON.stringify(uidList))
 
   // 7. タグ挿入
   let tc = 0
@@ -165,6 +211,66 @@ const NEW_CAFES = [
     await admin.from('cafes').update({ like_count: count || 0 }).eq('id', cafe.id)
   }
   log('いいね: ' + lc + '件')
+
+  // === 9. 元の5件に写真 + 位置を新宿駅周辺に修正 ===
+  const OLD_CAFE_UPDATES = [
+    { name: 'SIDEWALK COFFEE ROASTERS', url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=600&fit=crop', lat: 35.6910, lng: 139.7020 },
+    { name: 'JINNAN CAFE', url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=600&fit=crop', lat: 35.6880, lng: 139.7040 },
+    { name: 'GLITCH COFFEE & ROASTERS', url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&fit=crop', lat: 35.6900, lng: 139.7005 },
+    { name: 'TINY PONTA COFFEE', url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?q=80&w=600&fit=crop', lat: 35.6890, lng: 139.6980 },
+    { name: 'Brooklyn Parlor SHINJUKU', url: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=600&fit=crop', lat: 35.6920, lng: 139.7010 },
+  ]
+  let pc = 0
+  for (const p of OLD_CAFE_UPDATES) {
+    const cafeId = cafeMap[p.name]
+    if (!cafeId) { log('更新スキップ（不明）: ' + p.name); continue }
+    const { error } = await admin.from('cafes').update({ photo_url: p.url, lat: p.lat, lng: p.lng }).eq('id', cafeId)
+    if (error) { log('更新エラー: ' + p.name + ' - ' + error.message) } else { pc++ }
+  }
+  log('既存カフェ更新（写真+位置）: ' + pc + '件')
+
+  // === 10. 全カフェに追加タグを投入（既存があればスキップ）===
+  const EXTRA_TAGS = [
+    // 元の5件
+    ['SIDEWALK COFFEE ROASTERS', '写真映え', 0], ['SIDEWALK COFFEE ROASTERS', '隠れ家', 2],
+    ['JINNAN CAFE', '作業向き', 1], ['JINNAN CAFE', '写真映え', 2],
+    ['GLITCH COFFEE & ROASTERS', '一人でも入りやすい', 0], ['GLITCH COFFEE & ROASTERS', '写真映え', 1],
+    ['TINY PONTA COFFEE', 'コスパ◎', 1], ['TINY PONTA COFFEE', '静か', 2],
+    ['Brooklyn Parlor SHINJUKU', '写真映え', 0], ['Brooklyn Parlor SHINJUKU', 'おしゃべりOK', 1],
+    // 新規10件
+    ['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', '一人でも入りやすい', 0], ['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', '写真映え', 2],
+    ['About Life Coffee Brewers', 'コスパ◎', 0], ['About Life Coffee Brewers', '隠れ家', 2],
+    ['ONIBUS COFFEE Shinjuku', '作業向き', 1], ['ONIBUS COFFEE Shinjuku', '写真映え', 2],
+    ['Maruyama Coffee Shinjuku', '長居OK', 1], ['Maruyama Coffee Shinjuku', '写真映え', 2],
+    ['Cafe Obscura', '長居OK', 1], ['Cafe Obscura', 'コスパ◎', 2],
+    ['自家焙煎珈琲 凡', 'コスパ◎', 0], ['自家焙煎珈琲 凡', '作業向き', 2],
+    ['Counterpart Coffee Gallery', '一人でも入りやすい', 1], ['Counterpart Coffee Gallery', '長居OK', 2],
+    ['Cafe Aaliya', 'コスパ◎', 0], ['Cafe Aaliya', '隠れ家', 2],
+    ['Paul Bassett Shinjuku', '静か', 1], ['Paul Bassett Shinjuku', '長居OK', 2],
+    ['kawara CAFE & DINING', '電源あり', 0], ['kawara CAFE & DINING', '一人でも入りやすい', 1],
+  ]
+  let extraTc = 0
+  for (const [name, tag, ui] of EXTRA_TAGS) {
+    const cafeId = cafeMap[name]
+    if (!cafeId) { log('追加タグスキップ（不明）: ' + name); continue }
+    const uid = uidList[ui]
+    if (!uid) { log('追加タグスキップ（UIDなし）: ' + name + ' ' + tag); continue }
+    try {
+      // INSERT でユニーク制約違反は無視
+      const { error } = await admin.from('cafe_tags').insert({ cafe_id: cafeId, user_id: uid, tag })
+      if (error && error.code === '23505') {
+        // 一意制約違反 → 既存なのでOK
+        extraTc++
+      } else if (error) {
+        log('追加タグエラー: ' + name + ' - ' + tag + ' - ' + error.message + ' (code=' + error.code + ')')
+      } else {
+        extraTc++
+      }
+    } catch(e) {
+      log('追加タグ例外: ' + name + ' - ' + tag + ' - ' + e.message)
+    }
+  }
+  log('追加タグ: ' + extraTc + '件')
 
   log('\n✅ 完了！アプリに戻って更新してください')
 })()

@@ -339,7 +339,11 @@ function applySearchFilter() {
     if (query && !c.name.toLowerCase().includes(query) && !c.address.toLowerCase().includes(query) && !(c.comment && c.comment.toLowerCase().includes(query))) return false
     if (activeTags.length > 0) {
       const tags = c._tags || {}
-      if (!activeTags.some(t => tags[t])) return false
+      if (tagFilterMode === 'and') {
+        if (!activeTags.every(t => tags[t])) return false
+      } else {
+        if (!activeTags.some(t => tags[t])) return false
+      }
     }
     return true
   })
@@ -354,6 +358,8 @@ function applySearchFilter() {
 
   renderCafeList(filtered)
 }
+
+var tagFilterMode = 'or'
 
 function initTagFilter() {
   const container = document.getElementById('tag-filter')
@@ -370,9 +376,20 @@ function initTagFilter() {
     '<div class="mood-shortcuts">' + moodHtml + '</div>' +
     '</div>' +
     '<div class="tag-buttons">' +
+    '<div class="tag-filter-mode-row">' +
+    '<button id="tag-filter-mode-toggle" class="tag-filter-mode-btn">絞り込み: いずれかに一致 (OR)</button>' +
+    '</div>' +
     TAG_LIST.map(t => `<button class="tag-filter-btn" data-tag="${t}">${t}</button>`).join('') +
     '<button class="tag-filter-btn tag-filter-reset" id="tag-filter-reset">✕ リセット</button>' +
     '</div>'
+
+  document.getElementById('tag-filter-mode-toggle').addEventListener('click', function () {
+    tagFilterMode = tagFilterMode === 'or' ? 'and' : 'or'
+    const label = tagFilterMode === 'or' ? 'いずれかに一致 (OR)' : 'すべてに一致 (AND)'
+    this.textContent = '絞り込み: ' + label
+    this.classList.toggle('and', tagFilterMode === 'and')
+    applySearchFilter()
+  })
 
   container.addEventListener('click', async function (e) {
     const shortcut = e.target.closest('.mood-shortcut')
