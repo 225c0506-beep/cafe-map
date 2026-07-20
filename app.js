@@ -818,6 +818,10 @@ function setAuthMode(mode) {
 
 /* ヘッダーのログインボタン */
 document.getElementById('header-login-btn').addEventListener('click', function () {
+  if (document.getElementById('view-auth').style.display === 'block') {
+    showView('list')
+    return
+  }
   clearAuthInfo()
   document.getElementById('auth-email').value = ''
   document.getElementById('auth-password').value = ''
@@ -828,6 +832,10 @@ document.getElementById('header-login-btn').addEventListener('click', function (
 
 /* ヘッダーの新規登録ボタン */
 document.getElementById('header-signup-btn').addEventListener('click', function () {
+  if (document.getElementById('view-auth').style.display === 'block') {
+    showView('list')
+    return
+  }
   clearAuthInfo()
   document.getElementById('auth-email').value = ''
   document.getElementById('auth-password').value = ''
