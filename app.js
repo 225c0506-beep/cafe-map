@@ -1007,7 +1007,7 @@ document.getElementById('map-area').addEventListener('click', async function (e)
     if (detailBtn) {
       showDetail(cafe)
     } else {
-      var targetLat = cafe.lat - 0.003
+      var targetLat = cafe.lat + 0.003
       map.flyTo([targetLat, cafe.lng], 16, { duration: 0.5 })
       setTimeout(() => {
         var marker = markerMap[id]
