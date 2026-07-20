@@ -1006,11 +1006,15 @@ document.getElementById('map-area').addEventListener('click', async function (e)
 
     if (detailBtn) {
       map.closePopup()
-      map.flyTo([cafe.lat, cafe.lng], 17, { duration: 0.5 })
+      map.flyTo([cafe.lat, cafe.lng], 20, { duration: 0.5 })
       setTimeout(() => showDetail(cafe), 400)
     } else {
       var targetLat = cafe.lat + 0.003
       map.flyTo([targetLat, cafe.lng], 16, { duration: 0.5 })
+      setTimeout(() => {
+        var marker = markerMap[id]
+        if (marker) marker.openPopup()
+      }, 300)
     }
     if (window.innerWidth <= 768) {
       document.getElementById('view-list').style.display = 'none'
