@@ -982,10 +982,18 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
 document.getElementById('map-area').addEventListener('click', async function (e) {
   const card = e.target.closest('.cafe-card')
   const detailBtn = e.target.closest('.card-detail-btn')
-  if (card && detailBtn) {
+  if (card) {
     const id = parseInt(card.dataset.id, 10)
     const cafe = allCafes.find(c => c.id === id)
-    if (cafe) showDetail(cafe)
+    if (!cafe) return
+
+    if (detailBtn) {
+      showDetail(cafe)
+    } else {
+      map.setView([cafe.lat, cafe.lng], 15)
+      var marker = markerMap[id]
+      if (marker) marker.openPopup()
+    }
     return
   }
 
