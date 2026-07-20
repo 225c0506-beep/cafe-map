@@ -45,6 +45,11 @@ const TAG_DATA = [
   ['ONIBUS COFFEE Shinjuku', '静か',0],['ONIBUS COFFEE Shinjuku', '電源あり',0],['ONIBUS COFFEE Shinjuku', 'Wi-Fi快適',2],['ONIBUS COFFEE Shinjuku', '一人でも入りやすい',2],
   ['Maruyama Coffee Shinjuku', '作業向き',2],['Maruyama Coffee Shinjuku', '電源あり',2],['Maruyama Coffee Shinjuku', 'Wi-Fi快適',2],['Maruyama Coffee Shinjuku', '静か',2],
   ['Cafe Obscura', '隠れ家',0],['Cafe Obscura', '静か',1],['Cafe Obscura', '一人でも入りやすい',1],
+  ['自家焙煎珈琲 凡', '静か',0],['自家焙煎珈琲 凡', '一人でも入りやすい',0],['自家焙煎珈琲 凡', '写真映え',1],['自家焙煎珈琲 凡', '隠れ家',2],
+  ['Counterpart Coffee Gallery', '作業向き',0],['Counterpart Coffee Gallery', '静か',0],['Counterpart Coffee Gallery', '電源あり',0],['Counterpart Coffee Gallery', 'Wi-Fi快適',2],
+  ['Cafe Aaliya', 'おしゃべりOK',1],['Cafe Aaliya', '一人でも入りやすい',1],['Cafe Aaliya', '写真映え',2],
+  ['Paul Bassett Shinjuku', '作業向き',0],['Paul Bassett Shinjuku', '電源あり',0],['Paul Bassett Shinjuku', 'Wi-Fi快適',0],['Paul Bassett Shinjuku', 'コスパ◎',2],
+  ['kawara CAFE & DINING', 'おしゃべりOK',1],['kawara CAFE & DINING', '長居OK',1],['kawara CAFE & DINING', '写真映え',2],['kawara CAFE & DINING', 'Wi-Fi快適',2],
 ]
 
 const LIKE_DATA = [
@@ -53,17 +58,23 @@ const LIKE_DATA = [
   ['TINY PONTA COFFEE',1],['TINY PONTA COFFEE',2],
   ['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō',0],['About Life Coffee Brewers',1],
   ['ONIBUS COFFEE Shinjuku',2],['Maruyama Coffee Shinjuku',0],['Cafe Obscura',1],
+  ['自家焙煎珈琲 凡',0],['Counterpart Coffee Gallery',2],['Cafe Aaliya',1],['Paul Bassett Shinjuku',0],['kawara CAFE & DINING',1],
 ]
 
 const L = document.getElementById('log')
 function log(m) { L.textContent += m + '\n' }
 
 const NEW_CAFES = [
-  { name: 'BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', address: '東京都渋谷区代々木2-17-5', lat: 35.6902, lng: 139.7008, hours: '08:00〜20:00', wifi: 'yes', power: 'yes', parking: 'no', comment: 'アットホームな自家焙煎コーヒー店' },
-  { name: 'About Life Coffee Brewers', address: '東京都渋谷区神宮前6-27-8', lat: 35.6915, lng: 139.7040, hours: '08:00〜19:00', wifi: 'yes', power: 'no', parking: 'no', comment: 'スタンディングスタイルのコーヒースタンド' },
-  { name: 'ONIBUS COFFEE Shinjuku', address: '東京都新宿区新宿2-5-10', lat: 35.6885, lng: 139.7030, hours: '09:00〜19:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '落ち着いた空間で本格コーヒー' },
-  { name: 'Maruyama Coffee Shinjuku', address: '東京都新宿区新宿3-1-26', lat: 35.6922, lng: 139.7018, hours: '09:00〜21:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '厳選された豆のハンドドリップ' },
-  { name: 'Cafe Obscura', address: '東京都新宿区新宿2-9-2', lat: 35.6888, lng: 139.7100, hours: '10:00〜23:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '落ち着いた照明のカフェバー' },
+  { name: 'BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', address: '東京都渋谷区代々木2-17-5', lat: 35.6902, lng: 139.7008, hours: '08:00〜20:00', wifi: 'yes', power: 'yes', parking: 'no', comment: 'アットホームな自家焙煎コーヒー店', photo_url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=600&fit=crop' },
+  { name: 'About Life Coffee Brewers', address: '東京都渋谷区神宮前6-27-8', lat: 35.6915, lng: 139.7040, hours: '08:00〜19:00', wifi: 'yes', power: 'no', parking: 'no', comment: 'スタンディングスタイルのコーヒースタンド', photo_url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?q=80&w=600&fit=crop' },
+  { name: 'ONIBUS COFFEE Shinjuku', address: '東京都新宿区新宿2-5-10', lat: 35.6885, lng: 139.7030, hours: '09:00〜19:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '落ち着いた空間で本格コーヒー', photo_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=600&fit=crop' },
+  { name: 'Maruyama Coffee Shinjuku', address: '東京都新宿区新宿3-1-26', lat: 35.6922, lng: 139.7018, hours: '09:00〜21:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '厳選された豆のハンドドリップ', photo_url: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=600&fit=crop' },
+  { name: 'Cafe Obscura', address: '東京都新宿区新宿2-9-2', lat: 35.6888, lng: 139.7100, hours: '10:00〜23:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '落ち着いた照明のカフェバー', photo_url: null },
+  { name: '自家焙煎珈琲 凡', address: '東京都新宿区新宿3-23-1 都里一ビルB1F', lat: 35.6927, lng: 139.7008, hours: '12:00〜22:00', wifi: 'no', power: 'no', parking: 'no', comment: '毎日焙煎のコーヒーと本格ショートケーキ', photo_url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=600&fit=crop' },
+  { name: 'Counterpart Coffee Gallery', address: '東京都新宿区新宿5-1-1', lat: 35.6896, lng: 139.7078, hours: '07:30〜21:00', wifi: 'yes', power: 'yes', parking: 'no', comment: 'スペシャルティコーヒー専門店', photo_url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?q=80&w=600&fit=crop' },
+  { name: 'Cafe Aaliya', address: '東京都新宿区新宿3-1-17', lat: 35.6915, lng: 139.7002, hours: '11:00〜22:00', wifi: 'no', power: 'no', parking: 'no', comment: 'レトロな老舗カフェのふわふわフレンチトースト', photo_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=600&fit=crop' },
+  { name: 'Paul Bassett Shinjuku', address: '東京都新宿区西新宿1-26-2 新宿野村ビルB1F', lat: 35.6905, lng: 139.6995, hours: '07:30〜20:30', wifi: 'yes', power: 'yes', parking: 'no', comment: '世界チャンピオンバリスタ監修のコーヒー', photo_url: 'https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=600&fit=crop' },
+  { name: 'kawara CAFE & DINING', address: '東京都新宿区新宿3-23-12 パンドラビル8F', lat: 35.6925, lng: 139.7025, hours: '12:00〜22:30', wifi: 'yes', power: 'yes', parking: 'no', comment: '新宿の街並みを一望するおしゃれカフェ', photo_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=600&fit=crop' },
 ]
 
 ;(async () => {
@@ -107,7 +118,7 @@ const NEW_CAFES = [
     const { error } = await admin.from('cafes').insert({
       name: c.name, address: c.address, lat: c.lat, lng: c.lng,
       hours: c.hours, wifi: c.wifi, power: c.power, parking: c.parking,
-      comment: c.comment, photo_url: null, like_count: 0,
+      comment: c.comment, photo_url: c.photo_url || null, like_count: 0,
       user_id: uidList[0], nickname: '運営'
     })
     if (error) { log('カフェ作成エラー: ' + c.name + ' - ' + error.message); return }
