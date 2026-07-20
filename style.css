@@ -1222,27 +1222,24 @@ input:focus, select:focus {
 
   .mobile-menu-btn {
     display: flex;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 1001;
-    width: 40px;
-    height: 40px;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     border: none;
     border-radius: 50%;
     background: var(--color-white);
     color: var(--color-accent);
-    font-size: 22px;
+    font-size: 20px;
     cursor: pointer;
     box-shadow: var(--shadow-md);
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
+    transition: all 0.15s;
+    flex-shrink: 0;
   }
 
   .mobile-menu-btn:active {
     background: var(--color-bg);
-    transform: scale(0.95);
+    transform: scale(0.92);
   }
 
   #map-area {
@@ -1274,21 +1271,21 @@ input:focus, select:focus {
   }
 
   #search-input {
-    padding: 8px 10px;
-    font-size: 13px;
+    padding: 10px;
+    font-size: 14px;
   }
 
   #filter-toggle {
-    height: 34px;
-    padding: 0 10px;
+    height: 38px;
+    padding: 0 12px;
     font-size: 11px;
   }
 
   .mood-shortcut,
   .tag-filter-btn,
   .mood-shortcut.active {
-    padding: 4px 8px;
-    font-size: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
   }
 
   .tag-filter-reset {
@@ -1301,8 +1298,14 @@ input:focus, select:focus {
   }
 
   .cafe-card {
-    padding: 10px;
+    padding: 12px;
     margin-bottom: 8px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cafe-card:active {
+    transform: scale(0.98);
+    background: var(--color-bg);
   }
 
   .card-name {
@@ -1322,16 +1325,25 @@ input:focus, select:focus {
     font-size: 17px;
   }
 
-  .add-btn {
+  .card-detail-btn {
     padding: 10px;
+    font-size: 12px;
+  }
+
+  .add-btn {
+    padding: 12px;
     font-size: 13px;
   }
 
   #register-btn,
   #cancel-btn,
   .auth-submit-btn {
-    padding: 10px;
+    padding: 12px;
     font-size: 13px;
+  }
+
+  .tag-add-btn {
+    padding: 10px;
   }
 
   input, select {
