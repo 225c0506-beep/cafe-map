@@ -1146,13 +1146,38 @@ input:focus, select:focus {
    レスポンシブ
    ======================================== */
 
-/* --- タブレット（768px〜1024px） --- */
+/* --- タブレット・モバイル（〜1024px） --- */
 @media (max-width: 1024px) {
   #view-list,
   #view-form,
   #view-detail,
   #view-auth {
     width: 320px;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1001;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-white);
+    color: var(--color-accent);
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.15s;
+  }
+
+  .mobile-menu-btn:active {
+    background: var(--color-bg);
+    transform: scale(0.92);
   }
 }
 
