@@ -1007,9 +1007,11 @@ document.getElementById('map-area').addEventListener('click', async function (e)
     if (detailBtn) {
       showDetail(cafe)
     } else {
-      map.setView([cafe.lat, cafe.lng], 15)
-      var marker = markerMap[id]
-      if (marker) marker.openPopup()
+      map.flyTo([cafe.lat, cafe.lng], 16, { duration: 0.5 })
+      setTimeout(() => {
+        var marker = markerMap[id]
+        if (marker) marker.openPopup()
+      }, 300)
       if (window.innerWidth <= 768) {
         document.getElementById('view-list').style.display = 'none'
         hamburgerOpen = false
