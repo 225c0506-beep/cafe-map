@@ -1004,19 +1004,18 @@ document.getElementById('map-area').addEventListener('click', async function (e)
     const cafe = allCafes.find(c => c.id === id)
     if (!cafe) return
 
-    if (detailBtn) {
-      showDetail(cafe)
-    } else {
-      var targetLat = cafe.lat + 0.003
-      map.flyTo([targetLat, cafe.lng], 16, { duration: 0.5 })
-      setTimeout(() => {
-        var marker = markerMap[id]
-        if (marker) marker.openPopup()
-      }, 300)
-      if (window.innerWidth <= 768) {
-        document.getElementById('view-list').style.display = 'none'
-        hamburgerOpen = false
-      }
+    var targetLat = cafe.lat + 0.003
+    map.flyTo([targetLat, cafe.lng], 16, { duration: 0.5 })
+    setTimeout(() => {
+      var marker = markerMap[id]
+      if (marker) marker.openPopup()
+    }, 300)
+    setTimeout(() => {
+      if (detailBtn) showDetail(cafe)
+    }, 400)
+    if (window.innerWidth <= 768) {
+      document.getElementById('view-list').style.display = 'none'
+      hamburgerOpen = false
     }
     return
   }
