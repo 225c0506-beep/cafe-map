@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"><title>Seed Data - Supabase直挿入版</title></head>
+<body>
+<pre id="log"></pre>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL = 'https://blsfojnxwwyzjrunqlfg.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_vCzIleUkZIZLkBXIAjmn_g_FQCCG8i0'
+
+// サービスロールキー（Supabase管理画面 → Project Settings → API → service_role key）
+// ※ seed専用、このHTMLはデプロイしないこと
+const SERVICE_ROLE_KEY = prompt('Supabaseのservice_role keyを入力してください\n\nProject Settings → API → service_role key からコピー')
+
+if (!SERVICE_ROLE_KEY) {
+  document.getElementById('log').textContent = 'service_role keyが必要です'
+  throw new Error('no key')
+}
+
+// service_role で admin クライアント作成（RLS bypass）
+const admin = window.supabase.createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+
+const DUMMY_USERS = [
+  { email: 'demo1@cafemap.com', password: 'demo1234', nickname: 'カフェ巡りユウキ' },
+  { email: 'demo2@cafemap.com', password: 'demo1234', nickname: 'スイーツ好きアヤ' }
+]
+
+const TAG_DATA = [
+  ['SIDEWALK COFFEE ROASTERS', '作業向き',0],['SIDEWALK COFFEE ROASTERS', '静か',0],['SIDEWALK COFFEE ROASTERS', '電源あり',0],['SIDEWALK COFFEE ROASTERS', 'Wi-Fi快適',0],['SIDEWALK COFFEE ROASTERS', '一人でも入りやすい',0],
+  ['JINNAN CAFE', '作業向き',0],['JINNAN CAFE', '電源あり',0],['JINNAN CAFE', 'Wi-Fi快適',0],['JINNAN CAFE', '長居OK',0],
+  ['GLITCH COFFEE & ROASTERS', '作業向き',0],['GLITCH COFFEE & ROASTERS', '隠れ家',0],['GLITCH COFFEE & ROASTERS', '静か',0],['GLITCH COFFEE & ROASTERS', '電源あり',0],['GLITCH COFFEE & ROASTERS', 'Wi-Fi快適',0],
+  ['TINY PONTA COFFEE', '隠れ家',0],['TINY PONTA COFFEE', '静か',0],['TINY PONTA COFFEE', '一人でも入りやすい',0],['TINY PONTA COFFEE', '写真映え',0],
+  ['Brooklyn Parlor SHINJUKU', '隠れ家',0],['Brooklyn Parlor SHINJUKU', '電源あり',0],['Brooklyn Parlor SHINJUKU', 'Wi-Fi快適',0],['Brooklyn Parlor SHINJUKU', '長居OK',0],['Brooklyn Parlor SHINJUKU', '一人でも入りやすい',0],
+  ['SIDEWALK COFFEE ROASTERS', '作業向き',1],['SIDEWALK COFFEE ROASTERS', 'コスパ◎',1],['SIDEWALK COFFEE ROASTERS', '長居OK',1],
+  ['JINNAN CAFE', 'おしゃべりOK',1],['JINNAN CAFE', '長居OK',1],['JINNAN CAFE', 'コスパ◎',1],
+  ['GLITCH COFFEE & ROASTERS', '作業向き',1],['GLITCH COFFEE & ROASTERS', '電源あり',1],['GLITCH COFFEE & ROASTERS', 'Wi-Fi快適',1],
+  ['TINY PONTA COFFEE', '隠れ家',1],['TINY PONTA COFFEE', '写真映え',1],['TINY PONTA COFFEE', 'コスパ◎',1],
+  ['SIDEWALK COFFEE ROASTERS', '写真映え',2],['SIDEWALK COFFEE ROASTERS', '静か',2],
+  ['JINNAN CAFE', 'おしゃべりOK',2],['JINNAN CAFE', '長居OK',2],
+  ['GLITCH COFFEE & ROASTERS', '隠れ家',2],
+  ['TINY PONTA COFFEE', '隠れ家',2],['TINY PONTA COFFEE', '写真映え',2],['TINY PONTA COFFEE', '一人でも入りやすい',2],
+  ['Brooklyn Parlor SHINJUKU', 'おしゃべりOK',2],['Brooklyn Parlor SHINJUKU', '隠れ家',2],['Brooklyn Parlor SHINJUKU', '長居OK',2],['Brooklyn Parlor SHINJUKU', '写真映え',2],
+  ['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', '作業向き',0],['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', 'Wi-Fi快適',0],['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', '長居OK',0],['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', '静か',0],
+  ['About Life Coffee Brewers', '隠れ家',1],['About Life Coffee Brewers', '写真映え',1],['About Life Coffee Brewers', 'おしゃべりOK',1],
+  ['ONIBUS COFFEE Shinjuku', '静か',0],['ONIBUS COFFEE Shinjuku', '電源あり',0],['ONIBUS COFFEE Shinjuku', 'Wi-Fi快適',2],['ONIBUS COFFEE Shinjuku', '一人でも入りやすい',2],
+  ['Maruyama Coffee Shinjuku', '作業向き',2],['Maruyama Coffee Shinjuku', '電源あり',2],['Maruyama Coffee Shinjuku', 'Wi-Fi快適',2],['Maruyama Coffee Shinjuku', '静か',2],
+  ['Cafe Obscura', '隠れ家',0],['Cafe Obscura', '静か',1],['Cafe Obscura', '一人でも入りやすい',1],
+]
+
+const LIKE_DATA = [
+  ['SIDEWALK COFFEE ROASTERS',1],['JINNAN CAFE',1],
+  ['GLITCH COFFEE & ROASTERS',2],['Brooklyn Parlor SHINJUKU',2],
+  ['TINY PONTA COFFEE',1],['TINY PONTA COFFEE',2],
+  ['BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō',0],['About Life Coffee Brewers',1],
+  ['ONIBUS COFFEE Shinjuku',2],['Maruyama Coffee Shinjuku',0],['Cafe Obscura',1],
+]
+
+const L = document.getElementById('log')
+function log(m) { L.textContent += m + '\n' }
+
+const NEW_CAFES = [
+  { name: 'BE A GOOD NEIGHBOR COFFEE Kōshū Kaidō', address: '東京都渋谷区代々木2-17-5', lat: 35.6902, lng: 139.7008, hours: '08:00〜20:00', wifi: 'yes', power: 'yes', parking: 'no', comment: 'アットホームな自家焙煎コーヒー店' },
+  { name: 'About Life Coffee Brewers', address: '東京都渋谷区神宮前6-27-8', lat: 35.6915, lng: 139.7040, hours: '08:00〜19:00', wifi: 'yes', power: 'no', parking: 'no', comment: 'スタンディングスタイルのコーヒースタンド' },
+  { name: 'ONIBUS COFFEE Shinjuku', address: '東京都新宿区新宿2-5-10', lat: 35.6885, lng: 139.7030, hours: '09:00〜19:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '落ち着いた空間で本格コーヒー' },
+  { name: 'Maruyama Coffee Shinjuku', address: '東京都新宿区新宿3-1-26', lat: 35.6922, lng: 139.7018, hours: '09:00〜21:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '厳選された豆のハンドドリップ' },
+  { name: 'Cafe Obscura', address: '東京都新宿区新宿2-9-2', lat: 35.6888, lng: 139.7100, hours: '10:00〜23:00', wifi: 'yes', power: 'yes', parking: 'no', comment: '落ち着いた照明のカフェバー' },
+]
+
+;(async () => {
+  // 1. 既存ユーザーを取得
+  const { data: { users } } = await admin.auth.admin.listUsers()
+  const existing = {}
+  users.forEach(u => { existing[u.email] = u })
+  log('既存ユーザー: ' + Object.keys(existing).join(', '))
+
+  // 2. デモユーザー作成（service_roleでRLS bypass）
+  for (const u of DUMMY_USERS) {
+    if (existing[u.email]) {
+      log('既存: ' + u.email)
+      continue
+    }
+    const { data, error } = await admin.auth.admin.createUser({
+      email: u.email, password: u.password,
+      email_confirm: true,
+      user_metadata: { nickname: u.nickname }
+    })
+    if (error) { log('作成エラー: ' + u.email + ' - ' + error.message); return }
+    log('作成: ' + u.email + ' → ' + data.user.id)
+  }
+
+  // 3. 再度ユーザー一覧を取得してIDマップ作成
+  const { data: { users: allUsers } } = await admin.auth.admin.listUsers()
+  const userIds = {}
+  allUsers.forEach(u => { userIds[u.email] = u.id })
+
+  const myId = userIds[Object.keys(existing)[0]]
+  const demo1Id = userIds['demo1@cafemap.com']
+  const demo2Id = userIds['demo2@cafemap.com']
+  const uidList = [myId, demo1Id, demo2Id]
+  log('ユーザーID: ' + uidList.join(', '))
+
+  // 4. 新規カフェ挿入（なければ）
+  const { data: existingCafes } = await admin.from('cafes').select('name')
+  const existingNames = new Set((existingCafes || []).map(c => c.name))
+  for (const c of NEW_CAFES) {
+    if (existingNames.has(c.name)) { log('既存: ' + c.name); continue }
+    const { error } = await admin.from('cafes').insert({
+      name: c.name, address: c.address, lat: c.lat, lng: c.lng,
+      hours: c.hours, wifi: c.wifi, power: c.power, parking: c.parking,
+      comment: c.comment, photo_url: null, like_count: 0,
+      user_id: uidList[0], nickname: '運営'
+    })
+    if (error) { log('カフェ作成エラー: ' + c.name + ' - ' + error.message); return }
+    log('作成: ' + c.name)
+  }
+
+  // 5. カフェ一覧取得
+  const { data: cafes } = await admin.from('cafes').select('id, name')
+  if (!cafes || cafes.length === 0) { log('カフェがありません'); return }
+  const cafeMap = {}
+  cafes.forEach(c => { cafeMap[c.name] = c.id })
+  log('カフェ: ' + cafes.length + '件')
+
+  // 7. タグ挿入
+  let tc = 0
+  for (const [name, tag, ui] of TAG_DATA) {
+    const cafeId = cafeMap[name]
+    if (!cafeId) { log('不明: ' + name); continue }
+    const uid = uidList[ui]
+    if (!uid) continue
+    const { error } = await admin.from('cafe_tags').upsert(
+      { cafe_id: cafeId, user_id: uid, tag },
+      { onConflict: 'cafe_id,user_id,tag', ignoreDuplicates: true }
+    )
+    if (!error) tc++
+  }
+  log('タグ: ' + tc + '件')
+
+  // 8. いいね
+  let lc = 0
+  for (const [name, ui] of LIKE_DATA) {
+    const cafeId = cafeMap[name]
+    if (!cafeId) continue
+    const uid = uidList[ui]
+    if (!uid) continue
+    const { error } = await admin.from('likes').upsert(
+      { cafe_id: cafeId, user_id: uid },
+      { onConflict: 'cafe_id,user_id', ignoreDuplicates: true }
+    )
+    if (!error) lc++
+  }
+  for (const cafe of cafes) {
+    const { count } = await admin.from('likes').select('id', { count: 'exact', head: true }).eq('cafe_id', cafe.id)
+    await admin.from('cafes').update({ like_count: count || 0 }).eq('id', cafe.id)
+  }
+  log('いいね: ' + lc + '件')
+
+  log('\n✅ 完了！アプリに戻って更新してください')
+})()
+</script>
+</body>
+</html>
+

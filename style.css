@@ -1132,55 +1132,65 @@ input:focus, select:focus {
 /* --- スマートフォン（〜768px） --- */
 @media (max-width: 768px) {
   #header {
-    padding: 8px 12px;
-    flex-wrap: wrap;
-    gap: 6px;
+    padding: 6px 10px;
+    flex-wrap: nowrap;
+    gap: 4px;
   }
 
   .site-title {
-    font-size: 16px;
+    font-size: 13px;
   }
 
   .header-left {
-    gap: 8px;
+    gap: 4px;
   }
 
   .toggle-switch {
-    width: 36px;
-    height: 20px;
+    width: 30px;
+    height: 18px;
   }
 
   .toggle-slider {
-    width: 36px;
-    height: 20px;
+    width: 30px;
+    height: 18px;
   }
 
   .toggle-slider::after {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 
   .toggle-switch input:checked + .toggle-slider::after {
-    transform: translateX(16px);
+    transform: translateX(12px);
   }
 
   #header-right {
-    width: 100%;
+    width: auto;
+    flex-shrink: 1;
+    min-width: 0;
   }
 
   #auth-logged-out {
-    width: 100%;
+    width: auto;
     justify-content: flex-end;
   }
 
   #auth-logged-out button,
   #auth-signout-btn {
-    padding: 6px 10px;
-    font-size: 11px;
+    padding: 4px 8px;
+    font-size: 10px;
   }
 
   #auth-email-display {
-    font-size: 11px;
+    font-size: 10px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #auth-logged-in {
+    gap: 4px;
   }
 
   .mobile-menu-btn {
@@ -1222,9 +1232,9 @@ input:focus, select:focus {
   #view-detail,
   #view-auth {
     width: calc(100% - 20px);
-    top: 12px;
+    top: 56px;
     right: 8px;
-    max-height: calc(100% - 24px);
+    max-height: calc(100% - 64px);
     padding: 16px 14px;
   }
 
@@ -1298,16 +1308,20 @@ input:focus, select:focus {
   }
 
   .leaflet-control-zoom a {
-    width: 34px !important;
-    height: 34px !important;
-    line-height: 34px !important;
-    font-size: 16px !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    font-size: 14px !important;
   }
 
   .leaflet-control-locate-btn {
-    width: 34px !important;
-    height: 34px !important;
-    font-size: 17px !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 14px !important;
+  }
+
+  .leaflet-control-container .leaflet-bottom.leaflet-right {
+    bottom: 48px !important;
   }
 }
 

@@ -89,12 +89,21 @@ function tag(val, text) {
   return `<span class="info-tag ${cls}">${text}</span>`
 }
 
-/* ===== ビュー切り替え ===== */
+var hamburgerOpen = false
+
 function showView(view) {
   document.getElementById('view-list').style.display = view === 'list' ? 'block' : 'none'
   document.getElementById('view-form').style.display = view === 'form' ? 'block' : 'none'
   document.getElementById('view-detail').style.display = view === 'detail' ? 'block' : 'none'
   document.getElementById('view-auth').style.display = view === 'auth' ? 'block' : 'none'
+
+  if (window.innerWidth <= 768) {
+    if (view === 'list' && !hamburgerOpen) {
+      document.getElementById('view-list').style.display = 'none'
+    } else if (view !== 'list') {
+      hamburgerOpen = false
+    }
+  }
 }
 
 /* ===== カフェカード生成 ===== */
@@ -1139,11 +1148,12 @@ applyDarkMode(darkEnabled)
 
 /* --- モバイルメニューボタン --- */
 document.getElementById('mobile-menu-btn').addEventListener('click', function () {
-  var list = document.getElementById('view-list')
-  if (list.style.display === 'block') {
-    list.style.display = 'none'
+  if (hamburgerOpen) {
+    document.getElementById('view-list').style.display = 'none'
+    hamburgerOpen = false
   } else {
     showView('list')
+    hamburgerOpen = true
   }
 })
 
