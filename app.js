@@ -12,6 +12,7 @@ function setTileLayer(dark) {
 const map = L.map('map', { zoomControl: false }).setView([35.6895, 139.7000], 14)
 
 document.getElementById('home-btn').addEventListener('click', function () {
+  stopBounceAll()
   map.setView([35.6895, 139.7000], 14)
 })
 
@@ -311,20 +312,30 @@ function clearMarkers() {
 }
 
 function bounceMarker(marker) {
-  var original = marker.getLatLng()
-  var steps = 6
-  var offset = 0.00006
-  for (var i = 0; i < steps; i++) {
-    (function (j) {
-      setTimeout(function () {
-        var dy = j < steps / 2
-          ? -offset * (j + 1)
-          : -offset * (steps - j)
-        marker.setLatLng([original.lat + dy, original.lng])
-      }, j * 30)
-    })(i)
+  stopBounce(marker)
+  marker._bounceOrig = marker.getLatLng()
+  var steps = 6, offset = 0.00006, i = 0
+  marker._bounceTimer = setInterval(function () {
+    var dy = i < steps / 2
+      ? -offset * (i + 1)
+      : -offset * (steps - i)
+    marker.setLatLng([marker._bounceOrig.lat + dy, marker._bounceOrig.lng])
+    i = (i + 1) % steps
+  }, 40)
+}
+
+function stopBounce(marker) {
+  if (marker._bounceTimer) {
+    clearInterval(marker._bounceTimer)
+    delete marker._bounceTimer
   }
-  setTimeout(function () { marker.setLatLng(original) }, steps * 30)
+  if (marker._bounceOrig) {
+    marker.setLatLng(marker._bounceOrig)
+  }
+}
+
+function stopBounceAll() {
+  Object.values(markerMap).forEach(function (m) { stopBounce(m) })
 }
 
 /* ===== データ読み込み ===== */
@@ -947,6 +958,7 @@ document.getElementById('back-from-form').addEventListener('click', function () 
 })
 
 document.getElementById('back-from-detail').addEventListener('click', function () {
+  stopBounceAll()
   showView('list')
 })
 
@@ -1021,6 +1033,8 @@ document.getElementById('map-area').addEventListener('click', async function (e)
     if (!cafe) return
 
     if (detailBtn) {
+      stopBounceAll()
+      bounceMarker(markerMap[id])
       map.closePopup()
       map.flyTo([cafe.lat, cafe.lng], 18, { duration: 0.5 })
       setTimeout(() => showDetail(cafe), 400)
