@@ -1005,7 +1005,7 @@ document.getElementById('map-area').addEventListener('click', async function (e)
 
     if (detailBtn) {
       map.closePopup()
-      map.flyTo([cafe.lat, cafe.lng], 20, { duration: 0.5 })
+      map.flyTo([cafe.lat, cafe.lng], 18, { duration: 0.5 })
       setTimeout(() => showDetail(cafe), 400)
     } else {
       var targetLat = cafe.lat + 0.003
