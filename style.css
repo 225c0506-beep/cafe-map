@@ -1110,6 +1110,11 @@ input:focus, select:focus {
   color: var(--color-sub);
 }
 
+/* --- モバイルメニューボタン --- */
+.mobile-menu-btn {
+  display: none;
+}
+
 /* ========================================
    レスポンシブ
    ======================================== */
@@ -1127,13 +1132,36 @@ input:focus, select:focus {
 /* --- スマートフォン（〜768px） --- */
 @media (max-width: 768px) {
   #header {
-    padding: 10px 16px;
+    padding: 8px 12px;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
 
   .site-title {
-    font-size: 18px;
+    font-size: 16px;
+  }
+
+  .header-left {
+    gap: 8px;
+  }
+
+  .toggle-switch {
+    width: 36px;
+    height: 20px;
+  }
+
+  .toggle-slider {
+    width: 36px;
+    height: 20px;
+  }
+
+  .toggle-slider::after {
+    width: 16px;
+    height: 16px;
+  }
+
+  .toggle-switch input:checked + .toggle-slider::after {
+    transform: translateX(16px);
   }
 
   #header-right {
@@ -1145,13 +1173,44 @@ input:focus, select:focus {
     justify-content: flex-end;
   }
 
-  #map-area {
-    height: 100%;
+  #auth-logged-out button,
+  #auth-signout-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  #auth-email-display {
+    font-size: 11px;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-white);
+    color: var(--color-accent);
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .mobile-menu-btn:active {
+    background: var(--color-bg);
+    transform: scale(0.95);
   }
 
   #map-area {
-    height: 55vh;
-    flex: none;
+    height: 100%;
+    flex: 1;
   }
 
   #map {
@@ -1162,11 +1221,11 @@ input:focus, select:focus {
   #view-form,
   #view-detail,
   #view-auth {
-    width: calc(100% - 16px);
-    top: 8px;
+    width: calc(100% - 20px);
+    top: 12px;
     right: 8px;
-    max-height: calc(100% - 16px);
-    padding: 14px;
+    max-height: calc(100% - 24px);
+    padding: 16px 14px;
   }
 
   .card-photo {
@@ -1175,6 +1234,80 @@ input:focus, select:focus {
 
   .detail-photo {
     height: 140px;
+  }
+
+  #search-input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  #filter-toggle {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 11px;
+  }
+
+  .mood-shortcut,
+  .tag-filter-btn,
+  .mood-shortcut.active {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .tag-filter-reset {
+    font-size: 9px;
+  }
+
+  .cafe-card {
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+
+  .card-name {
+    font-size: 14px;
+  }
+
+  .card-address {
+    font-size: 11px;
+  }
+
+  .cafe-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  .detail-name {
+    font-size: 17px;
+  }
+
+  .add-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  #register-btn,
+  #cancel-btn,
+  .auth-submit-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  input, select {
+    padding: 7px 9px;
+    font-size: 13px;
+  }
+
+  .leaflet-control-zoom a {
+    width: 34px !important;
+    height: 34px !important;
+    line-height: 34px !important;
+    font-size: 16px !important;
+  }
+
+  .leaflet-control-locate-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 17px !important;
   }
 }
 
@@ -1366,6 +1499,11 @@ input:focus, select:focus {
 [data-theme="dark"] #filter-toggle {
   background: #1a1d1a;
   border-color: var(--color-sub);
+}
+
+[data-theme="dark"] .mobile-menu-btn {
+  background: #262926;
+  color: var(--color-text);
 }
 
 

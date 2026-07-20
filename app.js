@@ -1112,6 +1112,9 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   updateAuthUI(session?.user ?? null)
+  if (window.innerWidth <= 768) {
+    document.getElementById('view-list').style.display = 'none'
+  }
 })
 
 /* ========================================
@@ -1133,5 +1136,15 @@ document.getElementById('dark-toggle').addEventListener('change', function () {
 })
 
 applyDarkMode(darkEnabled)
+
+/* --- モバイルメニューボタン --- */
+document.getElementById('mobile-menu-btn').addEventListener('click', function () {
+  var list = document.getElementById('view-list')
+  if (list.style.display === 'block') {
+    list.style.display = 'none'
+  } else {
+    showView('list')
+  }
+})
 
 initTagFilter()
