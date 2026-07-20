@@ -310,6 +310,23 @@ function clearMarkers() {
   Object.keys(markerMap).forEach(k => delete markerMap[k])
 }
 
+function bounceMarker(marker) {
+  var original = marker.getLatLng()
+  var steps = 6
+  var offset = 0.00006
+  for (var i = 0; i < steps; i++) {
+    (function (j) {
+      setTimeout(function () {
+        var dy = j < steps / 2
+          ? -offset * (j + 1)
+          : -offset * (steps - j)
+        marker.setLatLng([original.lat + dy, original.lng])
+      }, j * 30)
+    })(i)
+  }
+  setTimeout(function () { marker.setLatLng(original) }, steps * 30)
+}
+
 /* ===== データ読み込み ===== */
 async function renderAllCafes() {
   clearMarkers()
@@ -1012,7 +1029,10 @@ document.getElementById('map-area').addEventListener('click', async function (e)
       map.flyTo([targetLat, cafe.lng], 16, { duration: 0.5 })
       setTimeout(() => {
         var marker = markerMap[id]
-        if (marker) marker.openPopup()
+        if (marker) {
+          bounceMarker(marker)
+          marker.openPopup()
+        }
       }, 300)
     }
     if (window.innerWidth <= 768) {
