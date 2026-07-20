@@ -993,6 +993,10 @@ document.getElementById('map-area').addEventListener('click', async function (e)
       map.setView([cafe.lat, cafe.lng], 15)
       var marker = markerMap[id]
       if (marker) marker.openPopup()
+      if (window.innerWidth <= 768) {
+        document.getElementById('view-list').style.display = 'none'
+        hamburgerOpen = false
+      }
     }
     return
   }
