@@ -224,7 +224,6 @@ function showDetail(cafe) {
   const container = document.getElementById('detail-content')
   container.innerHTML = buildDetailContent(cafe)
   showView('detail')
-  map.setView([cafe.lat, cafe.lng], 15)
 
   const picker = document.getElementById('detail-tag-picker')
   if (picker) {
