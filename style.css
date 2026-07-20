@@ -1138,7 +1138,7 @@ input:focus, select:focus {
 }
 
 /* --- モバイルメニューボタン --- */
-.mobile-menu-btn {
+#mobile-menu-btn {
   display: none;
 }
 
@@ -1155,8 +1155,8 @@ input:focus, select:focus {
     width: 320px;
   }
 
-  .mobile-menu-btn {
-    display: flex;
+  #mobile-menu-btn {
+    display: flex !important;
     align-items: center;
     justify-content: center;
     position: absolute;
@@ -1175,7 +1175,7 @@ input:focus, select:focus {
     transition: all 0.15s;
   }
 
-  .mobile-menu-btn:active {
+  #mobile-menu-btn:active {
     background: var(--color-bg);
     transform: scale(0.92);
   }
@@ -1243,31 +1243,6 @@ input:focus, select:focus {
 
   #auth-logged-in {
     gap: 4px;
-  }
-
-  .mobile-menu-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 1001;
-    width: 38px;
-    height: 38px;
-    border: none;
-    border-radius: 50%;
-    background: var(--color-white);
-    color: var(--color-accent);
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: var(--shadow-md);
-    transition: all 0.15s;
-  }
-
-  .mobile-menu-btn:active {
-    background: var(--color-bg);
-    transform: scale(0.92);
   }
 
   #map-area {
@@ -1607,7 +1582,7 @@ input:focus, select:focus {
   color: var(--color-white);
 }
 
-[data-theme="dark"] .mobile-menu-btn {
+[data-theme="dark"] #mobile-menu-btn {
   background: #262926;
   color: var(--color-text);
 }
