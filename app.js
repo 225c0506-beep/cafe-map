@@ -981,7 +981,8 @@ document.getElementById('cafe-form').addEventListener('submit', async function (
 /* --- カードのクリック（詳細表示） --- */
 document.getElementById('map-area').addEventListener('click', async function (e) {
   const card = e.target.closest('.cafe-card')
-  if (card) {
+  const detailBtn = e.target.closest('.card-detail-btn')
+  if (card && detailBtn) {
     const id = parseInt(card.dataset.id, 10)
     const cafe = allCafes.find(c => c.id === id)
     if (cafe) showDetail(cafe)
