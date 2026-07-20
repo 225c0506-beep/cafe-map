@@ -1322,6 +1322,7 @@ input:focus, select:focus {
 
   .leaflet-control-container .leaflet-bottom.leaflet-right {
     bottom: 48px !important;
+    z-index: 1002 !important;
   }
 }
 

@@ -1152,8 +1152,8 @@ document.getElementById('mobile-menu-btn').addEventListener('click', function ()
     document.getElementById('view-list').style.display = 'none'
     hamburgerOpen = false
   } else {
-    showView('list')
     hamburgerOpen = true
+    showView('list')
   }
 })
 
