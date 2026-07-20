@@ -321,7 +321,7 @@ function bounceMarker(marker) {
       : -offset * (steps - i)
     marker.setLatLng([marker._bounceOrig.lat + dy, marker._bounceOrig.lng])
     i = (i + 1) % steps
-  }, 40)
+  }, 80)
 }
 
 function stopBounce(marker) {
