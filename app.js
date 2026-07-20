@@ -12,7 +12,6 @@ function setTileLayer(dark) {
 const map = L.map('map', { zoomControl: false }).setView([35.6895, 139.7000], 14)
 
 document.getElementById('home-btn').addEventListener('click', function () {
-  stopBounceAll()
   map.setView([35.6895, 139.7000], 14)
 })
 
@@ -309,33 +308,6 @@ function clearMarkers() {
     }
   })
   Object.keys(markerMap).forEach(k => delete markerMap[k])
-}
-
-function bounceMarker(marker) {
-  stopBounce(marker)
-  marker._bounceOrig = marker.getLatLng()
-  var steps = 6, offset = 0.00006, i = 0
-  marker._bounceTimer = setInterval(function () {
-    var dy = i < steps / 2
-      ? -offset * (i + 1)
-      : -offset * (steps - i)
-    marker.setLatLng([marker._bounceOrig.lat + dy, marker._bounceOrig.lng])
-    i = (i + 1) % steps
-  }, 80)
-}
-
-function stopBounce(marker) {
-  if (marker._bounceTimer) {
-    clearInterval(marker._bounceTimer)
-    delete marker._bounceTimer
-  }
-  if (marker._bounceOrig) {
-    marker.setLatLng(marker._bounceOrig)
-  }
-}
-
-function stopBounceAll() {
-  Object.values(markerMap).forEach(function (m) { stopBounce(m) })
 }
 
 /* ===== データ読み込み ===== */
@@ -958,7 +930,6 @@ document.getElementById('back-from-form').addEventListener('click', function () 
 })
 
 document.getElementById('back-from-detail').addEventListener('click', function () {
-  stopBounceAll()
   showView('list')
 })
 
@@ -1033,8 +1004,6 @@ document.getElementById('map-area').addEventListener('click', async function (e)
     if (!cafe) return
 
     if (detailBtn) {
-      stopBounceAll()
-      bounceMarker(markerMap[id])
       map.closePopup()
       map.flyTo([cafe.lat, cafe.lng], 18, { duration: 0.5 })
       setTimeout(() => showDetail(cafe), 400)
@@ -1043,10 +1012,7 @@ document.getElementById('map-area').addEventListener('click', async function (e)
       map.flyTo([targetLat, cafe.lng], 16, { duration: 0.5 })
       setTimeout(() => {
         var marker = markerMap[id]
-        if (marker) {
-          bounceMarker(marker)
-          marker.openPopup()
-        }
+        if (marker) marker.openPopup()
       }, 300)
     }
     if (window.innerWidth <= 768) {
